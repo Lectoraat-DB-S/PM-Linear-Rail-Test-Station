@@ -1,5 +1,6 @@
-#include <AccelStepper.h>
-#include <Arduino_FreeRTOS.h>
+#include "defines.h"
+#include "LinearTestingDemoRtos.hpp"
+
 
 AccelStepper stepper(1, 8, 9);
 bool endstop;
@@ -8,6 +9,10 @@ long stepDistance = 0.00249;
 
 // Task handles
 TaskHandle_t stepperTaskHandle;
+
+// Function prototype
+void stepperTask(void *pvParameters);
+
 
 void setup()
 {
@@ -60,10 +65,10 @@ void stepperTask(void *pvParameters)
   }
 
   Serial.print("Sensor: ");
-  Serial.println(analogRead(A0));
+  Serial.println(analogRead(analogEndstop));
 
   // Move until sensor value is above 950
-  while (analogRead(A0) > 1000)
+  while (analogRead(analogEndstop) > 1000)
   {
     stepper.setSpeed(1000); // Set a moderate speed
     stepper.runSpeed();     // Move at the set speed
