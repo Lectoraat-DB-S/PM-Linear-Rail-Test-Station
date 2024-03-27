@@ -97,7 +97,7 @@ void stepperTask(void *pvParameters)
         int steps = stepper.currentPosition() + input.substring(5).toInt();
         Serial.print("Moving: ");
         Serial.println(steps);
-        stepper.moveTo(steps);
+        stepper.moveTo(steps);    
       }
       if (input.startsWith("pos")) {
         Serial.print("Current pos: ");
