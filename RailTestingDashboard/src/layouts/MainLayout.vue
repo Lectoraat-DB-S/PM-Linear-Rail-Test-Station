@@ -15,10 +15,15 @@ export default {
       router.push('/dashboard');
     };
 
+    const goToLogs = () => {
+      router.push('/logs');
+    };
+
     return {
       leftDrawerOpen,
       toggleLeftDrawer,
       goToDashboard,
+      goToLogs,
     };
   },
 };
@@ -57,7 +62,7 @@ export default {
             <q-item-label> Historische gegevens </q-item-label>
           </q-item-section>
         </q-item>
-        <q-item>
+        <q-item clickable @click="goToLogs">
           <q-item-section avatar>
             <q-icon name="description" />
           </q-item-section>

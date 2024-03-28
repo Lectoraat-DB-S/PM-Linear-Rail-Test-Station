@@ -19,6 +19,7 @@
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
     "vue": "^3.4.18",
+    "vue-paho-mqtt": "^0.4.1",
     "vue-router": "^4.0.12",
     "vue3-apexcharts": "^1.5.2"
   },
