@@ -1,14 +1,29 @@
 <script lang="ts">
 import { defineComponent, defineAsyncComponent } from 'vue';
 
+
+
 const MeasurementDeviation = defineAsyncComponent(() =>
   import('components/charts/MeasurementDeviation.vue')
+)
+const MeasurementTable = defineAsyncComponent(() =>
+  import('components/tables/MeasurementTable.vue')
+)
+const ParameterInput = defineAsyncComponent(() =>
+  import('components/ParameterInput.vue')
 )
 
 export default defineComponent({
   name: 'DashboardPage',
   components:{
     MeasurementDeviation,
+    MeasurementTable,
+    ParameterInput,
+  },
+  data() {
+    return {
+
+    };
   }
 
 });
@@ -29,14 +44,14 @@ export default defineComponent({
       <div class="col-4 child-container">
       <q-card class="no-border-radius">
         <q-card-section>
-          Child #2
+          <ParameterInput />
         </q-card-section>
       </q-card>
     </div>
       <div class="col-12 child-container">
       <q-card class="no-border-radius">
         <q-card-section>
-          Child #3
+          <MeasurementTable />
         </q-card-section>
       </q-card>
     </div>
