@@ -7,11 +7,17 @@ export default defineComponent({
   name: 'LogsPage',
   setup() {
     const messageToSend = ref('');
-    const receivedMessages = ref<string[]>([]);
+    const receivedDebug = ref<string[]>([]);
+    const receivedMeasurements = ref<string[]>([]);
     const DebugTopic = ref('linearRailControl/debug');
+    const MeasurementsTopic = ref('linearRailControl/measurements');
 
     $mqtt.subscribe(DebugTopic.value, (data: string) => {
-      receivedMessages.value.push(data);
+      receivedDebug.value.push(data);
+      console.log(data)
+    });
+    $mqtt.subscribe(MeasurementsTopic.value, (data: string) => {
+      receivedMeasurements.value.push(data);
       console.log(data)
     });
 
@@ -23,7 +29,7 @@ export default defineComponent({
       }
     };
 
-    return { messageToSend, receivedMessages, sendMessage };
+    return { messageToSend, receivedDebug, receivedMeasurements, sendMessage };
   }
 });
 </script>
@@ -34,11 +40,36 @@ export default defineComponent({
       <q-input v-model="messageToSend" label="Message to send" />
       <q-btn @click="sendMessage" label="Send Message" />
     </div>
-    <div>
-      <h2>Received Messages:</h2>
-      <ul>
-        <li v-for="(message, index) in receivedMessages" :key="index">{{ message }}</li>
-      </ul>
+    <div id="parent" class="fit row wrap justify-around  content-start" style="overflow: hidden;">
+      <div class="col-grow bg-grey-6 child-container">
+        <q-card class="no-border-radius">
+          <q-card-section>
+            <h6>Received Debug:</h6>
+            <ul>
+              <li v-for="(message, index) in receivedDebug" :key="index">{{ message }}</li>
+            </ul>
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="col-grow bg-grey-6 child-container">
+        <q-card class="no-border-radius">
+          <q-card-section>
+            <h6>Received Measurements:</h6>
+            <ul>
+              <li v-for="(message, index) in receivedMeasurements" :key="index">{{ message }}</li>
+            </ul>
+          </q-card-section>
+        </q-card>
+      </div>
     </div>
   </q-page>
 </template>
+
+<style scoped lang="sass">
+#parent
+  overflow: auto
+
+.child-container
+  overflow: auto
+
+</style>
