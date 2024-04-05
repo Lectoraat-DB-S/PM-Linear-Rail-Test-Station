@@ -5,6 +5,7 @@ import json
 import time
 import random
 
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected with result code {reason_code}")
@@ -28,8 +29,8 @@ def mqtt_init():
     username = "zigbee"
     password = "zigbeemqtt"
 
-    mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id='', clean_session=True, userdata=None,
-                        protocol=mqtt.MQTTv311, transport="websockets", manual_ack=False)
+    mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, clean_session=True, userdata=None,
+                        protocol=mqtt.MQTTv311, transport="websockets")
 
     # Set username and password
     mqttc.username_pw_set(username, password)
@@ -47,7 +48,8 @@ def mqtt_init():
 
 def generate_json(distance_from_start_to_holes, distance_between_holes, distance_from_first_to_last_hole, length):
     # Randomize decimal data
-    distance_from_start_to_holes = [int(value) + round(random.uniform(0, 1), 2) for value in distance_from_start_to_holes]
+    distance_from_start_to_holes = [int(value) + round(random.uniform(0, 1), 2) for value in
+                                    distance_from_start_to_holes]
     distance_between_holes = [int(value) + round(random.uniform(0, 1), 2) for value in distance_between_holes]
     distance_from_first_to_last_hole = int(distance_from_first_to_last_hole) + round(random.uniform(0, 1), 2)
     length = int(length) + round(random.uniform(0, 1), 2)
@@ -72,7 +74,8 @@ if __name__ == '__main__':
         length = 299
 
         # Generate JSON object
-        json_data = generate_json(distance_from_start_to_holes, distance_between_holes, distance_from_first_to_last_hole,
+        json_data = generate_json(distance_from_start_to_holes, distance_between_holes,
+                                  distance_from_first_to_last_hole,
                                   length)
 
         print(json_data)

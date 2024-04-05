@@ -6,7 +6,9 @@ export default {
     return {
       AVal: ref(300),
       FVal: ref(25),
-      GVal: ref(25)
+      GVal: ref(25),
+      Gaten: ref(8),
+      Gewicht: ref(200)
     }
   }
 }
@@ -14,7 +16,6 @@ export default {
 
 <template>
   <div class="q-pa-md example-row-equal-width" style="padding: 0">
-
     <div class="row">
       <div class="col">
         <div class="q-pa-md">
@@ -56,7 +57,34 @@ export default {
         </div>
       </div>
     </div>
-
+    <div class="row">
+      <div class="col">
+        <div class="q-pa-md">
+          <q-input
+            v-model.number="Gaten"
+            label="Gaten"
+            placeholder="8"
+            type="number"
+            filled
+            style="max-width: 200px"
+            dense
+          />
+        </div>
+      </div>
+      <div class="col">
+        <div class="q-pa-md">
+          <q-input
+            v-model.number="Gewicht"
+            label="Gewicht (g)"
+            placeholder="220.25"
+            type="number"
+            filled
+            style="max-width: 200px"
+            dense
+          />
+        </div>
+      </div>
+    </div>
     <div class="row justify-center">
       <div class="col">
         <div class="row items-center justify-center">
