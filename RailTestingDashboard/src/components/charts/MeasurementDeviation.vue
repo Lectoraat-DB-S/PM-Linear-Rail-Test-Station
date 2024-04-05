@@ -1,11 +1,16 @@
 ﻿<script lang="ts">
+import VueApexCharts from "vue3-apexcharts";
+
 export default {
   name : 'MeasurementDeviation',
+  components: {
+    VueApexCharts,
+  },
   data(){
     return{
       series: [{
         name: 'Desktops',
-        data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+        data: [-0.44, 0.2, 0.02, -0.07, 0.49, -0.15, 0.01, 0.03]
       }],
       chartOptions: {
         chart: {
@@ -13,10 +18,40 @@ export default {
           type: 'line',
           zoom: {
             enabled: false
-          }
+          },
+          annotations: {
+            yaxis: [{
+              y: 0,
+              borderColor: '#00E396',
+              label: {
+                borderColor: '#00E396',
+                style: {
+                  color: '#fff',
+                  background: '#00E396',
+                },
+                text: 'Support',
+              }
+            }, {
+              y: 0.3,
+              y2: -0.3,
+              borderColor: '#000',
+              fillColor: '#FEB019',
+              opacity: 0.2,
+              label: {
+                borderColor: '#333',
+                style: {
+                  fontSize: '10px',
+                  color: '#333',
+                  background: '#FEB019',
+                },
+                text: 'Y-axis range',
+              }
+            }],
+          },
         },
+        colors: ['#545454'],
         dataLabels: {
-          enabled: false
+          enabled: true
         },
         stroke: {
           curve: 'straight'
@@ -32,8 +67,18 @@ export default {
           },
         },
         xaxis: {
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-        }
+          categories: ['Begin', 'Gat 1', 'Gat 2', 'Gat 3', 'Gat 4', 'Gat 5', 'Gat 6', 'Einde'],
+          title: {
+            text: 'Rails'
+          }
+        },
+        yaxis: {
+          title: {
+            text: 'Afwijking (mm)'
+          },
+          min: -1,
+          max: 1
+        },
       },
     }
   }
@@ -41,7 +86,7 @@ export default {
 </script>
 
 <template>
-  <apexchart type="line" height="350" :options="chartOptions" :series="series"></apexchart>
+  <VueApexCharts type="line" height="350" :options="chartOptions" :series="series"></VueApexCharts>
 </template>
 
 <style scoped lang="sass">
