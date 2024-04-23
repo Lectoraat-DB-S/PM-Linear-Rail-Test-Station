@@ -1,27 +1,94 @@
-# template-repository 🦾
+# Lineaire Rail Meetopstelling README
 
-yoman
+## Beschrijving
+Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails via diverse technologieën zoals Arduino, PlatformIO, Python, en een Quasar webapplicatie. De opstelling gebruikt MQTT voor communicatie tussen de verschillende onderdelen en een visie systeem om de gaten te detecteren.
 
-codering
-Tijdens het opleveren van code zien we graag dat er een README bestand wordt meegeleverd, dit maakt het gemakkelijker voor een ander om met jouw code verder te gaan of er gebruik van te maken.
-Deze README beschrijft het project, wat je nodig hebt om de code te gebruiken en hoe je de code kunt gebruiken. Uiteraard kan dit ietsje afwijken aan de hand van welke taal je hebt geprogrammeerd, maar blijf het liefst zo dicht bij mogelijk bij deze standaarden.
+## Imports en Versies
 
-De volgende dingen zien we graag in een README:
-- beschrijving: graag zien we een korte beschrijving van je project. dus een korte uitleg wat je code doet als je het gebruikt.
-- imports en versies: graag zien we een lijst met alle imports, packages, software, etc die je hebt gebruikt met de versies. Denk hierbij aan je python versie, dat je iets met "pip install" hebt geinstalleerd of dat je ubuntu 23.04 als operating system hebt gebruikt (dus ook welke versie je hebt geinstalleerd). (test dus ook je code op een andere laptop!!! hierdoor weet je zeker dat je alles genoteerd hebt)
-- architectuur: graag zien we een korte beschrijving van de architectuur van je project. welke bestanden hebben welke bestanden nodig en wat kun je in welk bestand vinden.
-- reference: graag zien we een lijst met welke code je niet zelf hebt gemaakt of gebaseerd hebt op een ander zijn code met daarbij een link naar de originele code en een datum waarop je die code hebt geraadpleegd. Dit zorgt ervoor dat de juiste mensen credit krijgen. (let op, ook als je een functie ergens vandaan haalt en aanpast hoor je nog steeds te zeggen wie daar credit voor krijgt).
-- usage: op het moment dat je extra hardware zoals een robot gebruikt is het fijn als er ook iets uitgelegd wordt over hoe je alles hebt aangesloten en opgestart. Misschien is het wel van belang dat je eerst het programma op de cobot start voordat je de python code op je laptop start.
+### Software en Libraries
+#### Algemeen
+- **Operating System**: Ubuntu 23.04
+- **Python**: Versie 3.8
+  - `paho-mqtt==1.5.1`
+  - `opencv-python==4.5.2`
+- **Node.js**: Versie 14.17.0
+- **Quasar CLI**: Versie 1.1.2
+- **Halcon**: Versie 19.11 (voor het vision programma)
 
-- commenting: in code is het vrij normaal om comments te gebruiken om je code duidelijker te maken. Graag zien we dan ook dat dit gedaan wordt.
-	- functie beschrijving: Liefst zien we dat er per functie met een comment uitgelegd wordt hoe de functie werkt en waarvoor ie bedoeld wordt (dit kan vaak in 1 zin). mocht de functie lang zijn dan zien we ook graag comments tussendoor.
-	- Bestand beschrijving: Liefst zien we bovenaan elk bestand dat er een korte beschrijving staat van welke functies er in het bestand geprogrammeerd zijn.
-	- Variabele beschrijving:
+#### Arduino
+- **Arduino IDE**: Versie 1.8.13
+  - `AccelStepper`: Versie 1.64
+  - `FreeRTOS`: Versie 11.1.0-0
 
-Een ReadMe schrijf je in Markdown. in de volgende link vind je wat voorbeelden over hoe je deze kunt stylen:
-https://github.com/lifeparticle/Markdown-Cheatsheet
+#### PlatformIO
+- **PlatformIO**: Core 5.2.0, Home 3.3.4
+  - `AccelStepper`: Versie 1.64
+  - `FreeRTOS`: Versie 11.1.0-0
+  - `PubSubClient`: Versie 2.8.0
+  - `Ethernet`: Versie 2.0.2
 
-mocht je wat inspiratie willen kun je op de github hieronder even kijken.
-https://github.com/matiassingers/awesome-readme
+### Hardware
+- Arduino Uno
+- MQTT Broker (bijv. Mosquitto)
 
-https://integrity.mit.edu/handbook/academic-integrity-handbook
+## Architectuur
+
+### Bestandsstructuur
+- **/Arduino code**: Bevat sketches voor de Arduino om sensoren en actuatoren te besturen.
+- **/Platformio code**: Bevat geavanceerdere microcontroller code voor real-time operaties.
+- **/Python/Mock MQTT**: Scripts voor het genereren van mock MQTT data.
+- **/Quasar webapplicatie**: Front-end code voor het visualiseren van meetgegevens.
+- **/Python/Halcon vision**: Toepassing voor het detecteren en meten van gaten.
+
+### Communicatie
+- MQTT wordt gebruikt voor communicatie tussen de webapplicatie en de hardware via de broker.
+
+## Installatie en Hardware Setup
+
+### Arduino
+- **Hardware**: Arduino Uno.
+- **Software Installatie**:
+  - Installeer de Arduino IDE.
+  - Open en upload de sketches uit de map `/Arduino code` naar de Arduino Uno.
+
+### PlatformIO
+- **Hardware**: Dezelfde of compatibele microcontroller als Arduino.
+- **Software Installatie**:
+  - Installeer PlatformIO in Visual Studio Code.
+  - Open de map `/Platformio code` en upload de code naar de microcontroller.
+
+### Python Mock MQTT
+- **Software Installatie**:
+  - Installeer Python 3.8.
+  - Navigeer naar de map `/Python/Mock MQTT`.
+  - Voer `pip install -r requirements.txt` uit om de nodige libraries te installeren.
+  - Start de scripts om mock data te genereren voor MQTT communicatietests.
+
+### Quasar Webapplicatie
+- **Software Installatie**:
+  - Installeer Node.js en Quasar CLI.
+  - Navigeer naar de map van de Quasar-applicatie.
+  - Voer `npm install` en daarna `quasar dev` uit om de app in ontwikkelmodus te draaien.
+
+### Python Halcon Vision
+- **Software Installatie**:
+  - Zorg ervoor dat Halcon en Python geïnstalleerd zijn.
+  - Navigeer naar de map `/Python/Halcon vision`.
+  - Voer `pip install -r requirements.txt` uit voor de benodigde Python libraries.
+
+## Usage
+
+Elk deel van het project heeft specifieke opstartinstructies afhankelijk van de betrokken hardware en software. Raadpleeg de specifieke README-bestanden in elke map voor gedetailleerde opstart- en gebruiksprocedures.
+
+## Commenting
+
+### Functie Beschrijving
+- Elk script en elke functie binnen het project heeft commentaarregels die de werking en het doel ervan uitleggen.
+
+### Bestand Beschrijving
+- Elk bestand begint met een header commentaar dat de inhoud en de doeleinden van de daarin opgenomen functies beschrijft.
+
+### Variabele Beschrijving
+- Belangrijke variabelen zijn gedocumenteerd met commentaar om hun gebruik en relevantie uit te leggen.
+
+Dit document is een gids voor het installeren, gebruiken en
