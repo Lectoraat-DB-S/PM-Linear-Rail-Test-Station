@@ -46,16 +46,18 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
 ## Installatie en Hardware Setup
 
 ### Arduino
-- **Hardware**: Arduino Uno.
+- **Hardware**: Arduino.
 - **Software Installatie**:
   - Installeer de Arduino IDE.
-  - Open en upload de sketches uit de map `/Arduino code` naar de Arduino Uno.
+  - Installeer de benodigde libraries
+  - Open en upload de sketches uit de map `/Arduino` naar de Arduino.
 
 ### PlatformIO
 - **Hardware**: Dezelfde of compatibele microcontroller als Arduino.
 - **Software Installatie**:
   - Installeer PlatformIO in Visual Studio Code.
-  - Open de map `/Platformio code` en upload de code naar de microcontroller.
+  - Installeer de benodigde libraries
+  - Open de map `/PlatformIO` en upload de code naar de microcontroller.
 
 ### Python Mock MQTT
 - **Software Installatie**:
@@ -67,13 +69,13 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
 ### Quasar Webapplicatie
 - **Software Installatie**:
   - Installeer Node.js en Quasar CLI.
-  - Navigeer naar de map van de Quasar-applicatie.
+  - Navigeer naar de map van `/RailTestingDashboard`.
   - Voer `npm install` en daarna `quasar dev` uit om de app in ontwikkelmodus te draaien.
 
 ### Python Halcon Vision
 - **Software Installatie**:
   - Zorg ervoor dat Halcon en Python geïnstalleerd zijn.
-  - Navigeer naar de map `/Python/Halcon vision`.
+  - Navigeer naar de map `/RailMeasurement/HalconRailMeasurement`.
   - Voer `pip install -r requirements.txt` uit voor de benodigde Python libraries.
 
 ## Usage
@@ -91,4 +93,4 @@ Elk deel van het project heeft specifieke opstartinstructies afhankelijk van de 
 ### Variabele Beschrijving
 - Belangrijke variabelen zijn gedocumenteerd met commentaar om hun gebruik en relevantie uit te leggen.
 
-Dit document is een gids voor het installeren, gebruiken en
+Dit document is een gids voor het installeren, gebruiken en begrijpen van de software en hardware betrokken bij dit project. Voor meer informatie of technische ondersteuning, refereer naar de documentatie of open een issue op GitHub.
