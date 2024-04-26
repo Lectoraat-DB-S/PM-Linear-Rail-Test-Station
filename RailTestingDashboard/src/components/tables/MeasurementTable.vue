@@ -3,55 +3,58 @@ import { defineComponent } from 'vue';
 
 interface Row {
   name: string;
-  calories: number;
-  fat: number;
-  carbs: number;
-  protein: number;
-  sodium: number;
-  calcium: string;
-  iron: string;
+  gat_1: number;
+  gat_2: number;
+  gat_3: number;
+  gat_4: number;
+  gat_5: number;
+  gat_6: number;
+  einde: number;
 }
 
 const columns: { name: string; label: string; field: string | ((row: Row) => string); required?: boolean; align?: 'left' | 'center' | 'right'; sortable?: boolean; sort?: (a: string, b: string) => number }[] = [
   {
     name: 'name',
-    label: 'Dessert (100g serving)',
+    label: 'Metingen batch 1234',
     // field: 'name',
     field: (row: Row) => row.name,
     required: true,
     align: 'left',
     sortable: true,
   },
-  { name: 'calories', align: 'center', label: 'Calories', field: 'calories', sortable: true },
-  { name: 'fat', label: 'Fat (g)', field: 'fat', sortable: true },
-  { name: 'carbs', label: 'Carbs (g)', field: 'carbs' },
-  { name: 'protein', label: 'Protein (g)', field: 'protein' },
-  { name: 'sodium', label: 'Sodium (mg)', field: 'sodium' },
-  { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a: string, b: string) => parseFloat(a) - parseFloat(b) },
-  { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a: string, b: string) => parseFloat(a) - parseFloat(b) }
+  { name: 'start', label: 'Start', field: 'start', sortable: true },
+  { name: 'gat_1', label: 'Gat 1', field: 'gat_1', sortable: true },
+  { name: 'gat_2', label: 'Gat 2', field: 'gat_2', sortable: true },
+  { name: 'gat_3', label: 'Gat 3', field: 'gat_3' },
+  { name: 'gat_4', label: 'Gat 4', field: 'gat_4' },
+  { name: 'gat_5', label: 'Gat 5', field: 'gat_5' },
+  { name: 'gat_6', label: 'Gat 6', field: 'gat_6' },
+  { name: 'einde', label: 'Einde', field: 'einde' }
 ];
 
 
 const rows = [
   {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
+    name: 'Rail 1',
+    start: -0.44,
+    gat_1: 0.2,
+    gat_2: 0.02,
+    gat_3: -0.07,
+    gat_4: 0.49,
+    gat_5: -0.15,
+    gat_6: 0.01,
+    einde: 0.03,
   },
   {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: '8%',
-    iron: '1%'
+    name: 'Rail 2',
+    start: -0.2,
+    gat_1: 0.02,
+    gat_2: -0.07,
+    gat_3: 0.49,
+    gat_4: -0.15,
+    gat_5: 0.01,
+    gat_6: 0.03,
+    einde: -0.44,
   }
 ]
 
@@ -72,7 +75,7 @@ export default defineComponent({
   <div class="q-pa-md">
     <q-table
       flat bordered
-      title="Treats"
+      title="Meetgegevens"
       :rows="rows"
       :columns="columns"
       row-key="name"
@@ -82,39 +85,44 @@ export default defineComponent({
           <q-td key="name" :props="props">
             {{ props.row.name }}
           </q-td>
-          <q-td key="calories" :props="props">
-            <q-badge color="green">
-              {{ props.row.calories }}
-            </q-badge>
-          </q-td>
-          <q-td key="fat" :props="props">
+          <q-td key="start" :props="props">
             <q-badge color="purple">
-              {{ props.row.fat }}
+              {{ props.row.start }}
             </q-badge>
           </q-td>
-          <q-td key="carbs" :props="props">
-            <q-badge color="orange">
-              {{ props.row.carbs }}
+          <q-td key="gat_1" :props="props">
+            <q-badge color="green">
+              {{ props.row.gat_1 }}
             </q-badge>
           </q-td>
-          <q-td key="protein" :props="props">
-            <q-badge color="primary">
-              {{ props.row.protein }}
+          <q-td key="gat_2" :props="props">
+            <q-badge color="green">
+              {{ props.row.gat_2 }}
             </q-badge>
           </q-td>
-          <q-td key="sodium" :props="props">
-            <q-badge color="teal">
-              {{ props.row.sodium }}
+          <q-td key="gat_3" :props="props">
+            <q-badge color="green">
+              {{ props.row.gat_3 }}
             </q-badge>
           </q-td>
-          <q-td key="calcium" :props="props">
-            <q-badge color="accent">
-              {{ props.row.calcium }}
+          <q-td key="gat_4" :props="props">
+            <q-badge color="green">
+              {{ props.row.gat_4 }}
             </q-badge>
           </q-td>
-          <q-td key="iron" :props="props">
-            <q-badge color="amber">
-              {{ props.row.iron }}
+          <q-td key="gat_5" :props="props">
+            <q-badge color="red">
+              {{ props.row.gat_5 }}
+            </q-badge>
+          </q-td>
+          <q-td key="gat_6" :props="props">
+            <q-badge color="green">
+              {{ props.row.gat_6 }}
+            </q-badge>
+          </q-td>
+          <q-td key="einde" :props="props">
+            <q-badge color="purple">
+              {{ props.row.einde }}
             </q-badge>
           </q-td>
         </q-tr>

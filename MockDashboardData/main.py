@@ -83,4 +83,4 @@ if __name__ == '__main__':
         mqttClient.publish("MAIN/linearRailControl/measurements", json_data)
 
         # Wait for 20 seconds
-        time.sleep(20)
+        time.sleep(10)
