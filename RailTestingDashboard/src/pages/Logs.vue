@@ -36,30 +36,30 @@ export default defineComponent({
 
 <template>
   <q-page padding>
-    <div>
+    <div class="q-gutter-y-md column">
       <q-input v-model="messageToSend" label="Message to send" />
-      <q-btn @click="sendMessage" label="Send Message" />
-    </div>
-    <div id="parent" class="fit row wrap justify-around  content-start" style="overflow: hidden;">
-      <div class="col-grow bg-grey-6 child-container">
-        <q-card class="no-border-radius">
-          <q-card-section>
-            <h6>Received Debug:</h6>
-            <ul>
-              <li v-for="(message, index) in receivedDebug" :key="index">{{ message }}</li>
-            </ul>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-grow bg-grey-6 child-container">
-        <q-card class="no-border-radius">
-          <q-card-section>
-            <h6>Received Measurements:</h6>
-            <ul>
-              <li v-for="(message, index) in receivedMeasurements" :key="index">{{ message }}</li>
-            </ul>
-          </q-card-section>
-        </q-card>
+      <q-btn color="primary" text-color="black" @click="sendMessage" label="Send Message" />
+      <div id="parent" class="fit row wrap justify-around content-start" style="overflow: hidden;">
+        <div class="col-grow child-container">
+          <q-card bordered style="margin: 5px">
+            <q-card-section>
+              <div class="text-h6">Received Debug:</div>
+              <ul>
+                <li v-for="(message, index) in receivedDebug" :key="index">{{ message }}</li>
+              </ul>
+            </q-card-section>
+          </q-card>
+        </div>
+        <div class="col-grow child-container">
+          <q-card bordered style="margin: 5px">
+            <q-card-section>
+              <div class="text-h6">Received Measurements:</div>
+              <ul>
+                <li v-for="(message, index) in receivedMeasurements" :key="index">{{ message }}</li>
+              </ul>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </div>
   </q-page>
