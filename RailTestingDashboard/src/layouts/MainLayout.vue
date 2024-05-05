@@ -15,15 +15,25 @@ export default {
       router.push('/dashboard');
     };
 
+    const goToHistory = () => {
+      router.push('/history');
+    };
+
     const goToLogs = () => {
       router.push('/logs');
+    };
+
+    const goToSettings = () => {
+      router.push('/settings');
     };
 
     return {
       leftDrawerOpen,
       toggleLeftDrawer,
       goToDashboard,
+      goToHistory,
       goToLogs,
+      goToSettings,
     };
   },
 };
@@ -54,7 +64,7 @@ export default {
             <q-item-label> Dashboard </q-item-label>
           </q-item-section>
         </q-item>
-        <q-item>
+        <q-item clickable @click="goToHistory">
           <q-item-section avatar>
             <q-icon name="history" />
           </q-item-section>
@@ -70,7 +80,7 @@ export default {
             <q-item-label> Logs </q-item-label>
           </q-item-section>
         </q-item>
-        <q-item>
+        <q-item clickable @click="goToSettings">
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
