@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_update_off ()</l>
+<c>*</c>
+<c>* Read the calibration data.</c>
+<l>read_cam_par ('camera_parameters.cal', CameraParam)</l>
+<l>read_pose ('pose.dat', Pose)</l>
+<c>*</c>
+<c></c>
+<c>* Read all images and prepare the alignment.</c>
+<l>list_image_files ('Images', 'default', [], ImageFiles)</l>
+<l>read_image (Image, ImageFiles[0])</l>
+<c></c>
+<c></c>
+<c>* </c>
+<c>* Matching 01: Build the ROI from basic regions</c>
+<l>gen_circle (ModelRegion, 745.97600000, 874.34300000, 75.49250000)</l>
+<c>* </c>
+<c>* Matching 01: Reduce the model template</c>
+<l>reduce_domain (Image, ModelRegion, TemplateImage)</l>
+<c>* </c>
+<c>* Matching 01: Create and train the shape model</c>
+<l>create_generic_shape_model (ModelID)</l>
+<c>* Matching 01: set the model parameters</c>
+<l>set_generic_shape_model_param (ModelID, 'iso_scale_max', 1.71)</l>
+<l>set_generic_shape_model_param (ModelID, 'iso_scale_min', 0.69)</l>
+<l>set_generic_shape_model_param (ModelID, 'metric', 'use_polarity')</l>
+<l>train_generic_shape_model (TemplateImage, ModelID)</l>
+<c>* </c>
+<c>* Matching 01: Get the model contour for transforming it later into the image</c>
+<l>get_shape_model_contours (ModelContours, ModelID, 1)</l>
+<c>* </c>
+<c>* Matching 01: Support for displaying the model</c>
+<c>* Matching 01: Get the reference position</c>
+<l>area_center (ModelRegion, ModelRegionArea, RefRow, RefColumn)</l>
+<l>vector_angle_to_rigid (0, 0, 0, RefRow, RefColumn, 0, HomMat2D)</l>
+<l>affine_trans_contour_xld (ModelContours, TransContours, HomMat2D)</l>
+<c>* </c>
+<c>* Matching 01: Display the model contours</c>
+<l>dev_display (Image)</l>
+<l>dev_set_color ('green')</l>
+<l>dev_set_draw ('margin')</l>
+<l>dev_display (ModelRegion)</l>
+<l>dev_display (TransContours)</l>
+<l>stop ()</l>
+<c>* </c>
+<c>* Matching 01: END of generated code for model initialization</c>
+<c>* Matching 01:  * * * * * * * * * * * * * * * * * * * * * * *</c>
+<c>* Matching 01: BEGIN of generated code for model application</c>
+<c>* Matching 01: Set the search paramaters</c>
+<l>set_generic_shape_model_param (ModelID, 'min_score', 0.99)</l>
+<l>set_generic_shape_model_param (ModelID, 'max_overlap', 0)</l>
+<l>set_generic_shape_model_param (ModelID, 'border_shape_models', 'false')</l>
+<l>set_generic_shape_model_param (ModelID, 'pyramid_level_robust_tracking', 'true')</l>
+<c></c>
+<c>*</c>
+<c>* Loop through all images.</c>
+<l>for Index := 0 to |ImageFiles|-1 by 1</l>
+<l>    read_image (Image, ImageFiles[Index])</l>
+<l>    dev_display (Image)</l>
+<c>    </c>
+<c>    * </c>
+<c>    * Matching 01: Find the model</c>
+<l>    find_generic_shape_model (Image, ModelID, MatchResultID, NumMatchResult)</l>
+<c>    * </c>
+<c>    * Matching 01: Retrieve results</c>
+<l>for I := 0 to NumMatchResult-1 by 1</l>
+<c>    * </c>
+<c>    * Matching 01: Retrieve parameters of the detected match</c>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'row', Row)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'column', Column)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'angle', Angle)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'scale_row', ScaleRow)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'scale_column', ScaleColumn)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'hom_mat_2d', HomMat2D)</l>
+<l>    get_generic_shape_model_result (MatchResultID, I, 'score', Score)</l>
+<c>    </c>
+<c>    * Display the contours of the detected circles</c>
+<l>    get_generic_shape_model_result_object (MatchContour, MatchResultID, I, 'contours')</l>
+<l>    dev_set_color ('green')</l>
+<l>    dev_display (MatchContour)</l>
+<l>endfor</l>
+<c></c>
+<c>* Initialize variables to store circle connections</c>
+<l>Rows := NumMatchResult</l>
+<l>Columns := NumMatchResult</l>
+<l>create_matrix(Rows, Columns, 0, CircleConnectionsMatrixID)</l>
+<l>DistanceThreshold := 20  // Threshold for considering circles as neighbors</l>
+<c></c>
+<c>    * Calculate distances between all pairs of detected circles</c>
+<l>    for I := 0 to NumMatchResult-1 by 1</l>
+<l>        for J := 0 to NumMatchResult-1 by 1</l>
+<l>            if (I != J)</l>
+<c>                </c>
+<c>                * Calculate real center of the circles</c>
+<l>                get_generic_shape_model_result_object (MatchContour1, MatchResultID, I, 'contours')</l>
+<l>                get_generic_shape_model_result_object (MatchContour2, MatchResultID, J, 'contours')</l>
+<c>                </c>
+<l>                area_center_points_xld (MatchContour1, Area, Row1, Column1)</l>
+<l>                area_center_points_xld (MatchContour2, Area, Row2, Column2)</l>
+<c>                </c>
+<c>                * Convert the results to world coordinates</c>
+<l>                image_points_to_world_plane (CameraParam, Pose, Row1, Column1, 'mm', X1, Y1)</l>
+<l>                image_points_to_world_plane (CameraParam, Pose, Row2, Column2, 'mm', X2, Y2)</l>
+<c>                </c>
+<c>                * Calculate the distance between the current and other circles</c>
+<l>                distance_pp (X1, Y1, X2, Y2, Distance)</l>
+<c>                </c>
+<c>                * Check if the distance is below the threshold</c>
+<l>                if (Distance &lt; DistanceThreshold)</l>
+<c>                    * Insert the distance into the matrix at the appropriate indices</c>
+<l>                    set_value_matrix(CircleConnectionsMatrixID, I, J, Distance)</l>
+<l>                endif</l>
+<l>            endif</l>
+<l>        endfor</l>
+<l>    endfor</l>
+<c>    </c>
+<c>    * Draw lines between circles based on the matrix</c>
+<l>    for I := 0 to Rows-1 by 1</l>
+<l>        for J := 0 to Columns-1 by 1</l>
+<l>            get_value_matrix(CircleConnectionsMatrixID, I, J, Distance)</l>
+<l>            if (Distance != 0)  // If there's a connection</l>
+<c></c>
+<c>                </c>
+<c>                * Calculate real center of the circles</c>
+<l>                get_generic_shape_model_result_object (MatchContour1, MatchResultID, I, 'contours')</l>
+<l>                get_generic_shape_model_result_object (MatchContour2, MatchResultID, J, 'contours')</l>
+<c>                </c>
+<l>                area_center_points_xld (MatchContour1, Area, Row1, Column1)</l>
+<l>                area_center_points_xld (MatchContour2, Area, Row2, Column2)</l>
+<c>                </c>
+<c>                </c>
+<c>                * Get the handle of the active graphics window</c>
+<l>                dev_get_window (WindowHandle)</l>
+<c>                </c>
+<c>                * Draw a line between the connected circles</c>
+<l>                dev_set_color ('pink')</l>
+<l>                disp_line (WindowHandle, Row1, Column1, Row2, Column2)</l>
+<c>                </c>
+<c>                * Draw a dot at the start and end of the line</c>
+<l>                Radius := 5</l>
+<l>                dev_set_color ('blue')</l>
+<l>                disp_circle (WindowHandle, Row1, Column1, Radius)</l>
+<l>                disp_circle (WindowHandle, Row2, Column2, Radius)</l>
+<c>                </c>
+<c>                * Calculate the midpoint of the line</c>
+<l>                MidRow := (Row1 + Row2) / 2</l>
+<l>                MidColumn := (Column1 + Column2) / 2</l>
+<c>                </c>
+<c>                * Display the distance text</c>
+<l>                dev_set_color ('red')</l>
+<l>                * dev_disp_text ('Distance: ' + Distance, 'image', MidRow, MidColumn, 'red', [], [])</l>
+<l>                dev_disp_text (Distance, 'image', MidRow, MidColumn, 'red', [], [])</l>
+<l>            endif</l>
+<l>        endfor</l>
+<l>    endfor</l>
+<l>    stop ()</l>
+<l>endfor</l>
+<c></c>
+<c as_id="matching" as_name="Matching 01" as_grp="[1,1,2]" as_ord="1"></c>
+<l as_id="matching" as_name="Matching 01" as_grp="[4]" as_ord="2">while (true)</l>
+<c as_id="matching" as_name="Matching 01" as_grp="[6]" as_ord="1">    </c>
+<l>stop ()</l>
+<c></c>
+<c></c>
+<c></c>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,1]" as_ord="1">    * </c>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,1]" as_ord="2">    * Matching 01: Code for alignment of e.g., measurements</c>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,2]" as_ord="1">    for I := 0 to NumMatchResult-1 by 1</l>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,3]" as_ord="1">        * Matching 01: Retrieve a hom_mat2d for each of the matching results</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,3]" as_ord="2">        * Matching 01: Retrieve the matching results</c>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,3]" as_ord="3">        get_generic_shape_model_result (MatchResultID, I, 'hom_mat_2d', HomMat2D)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,3]" as_ord="4">        hom_mat2d_identity (AlignmentHomMat2D)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,4]" as_ord="1">        hom_mat2d_translate (AlignmentHomMat2D, -RefRow, -RefColumn, AlignmentHomMat2D)</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,4]" as_ord="2">        hom_mat2d_compose (HomMat2D, AlignmentHomMat2D, AlignmentHomMat2D)</l>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,5]" as_ord="1">        * Matching 01: Insert your code using the alignment here, e.g., code generated by</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,5]" as_ord="2">        * Matching 01: the measure assistant with the code generation option</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[8,5]" as_ord="3">        * Matching 01: 'Alignment Method' set to 'Affine Transformation'.</c>
+<l as_id="matching" as_name="Matching 01" as_grp="[8,6]" as_ord="1">    endfor</l>
+<l as_id="matching" as_name="Matching 01" as_grp="[10]" as_ord="1">endwhile</l>
+<c as_id="matching" as_name="Matching 01" as_grp="[11]" as_ord="1">* </c>
+<c as_id="matching" as_name="Matching 01" as_grp="[12]" as_ord="1">* Matching 01: *******************************************</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[12]" as_ord="2">* Matching 01: END of generated code for model application</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[12]" as_ord="3">* Matching 01: *******************************************</c>
+<c as_id="matching" as_name="Matching 01" as_grp="[12]" as_ord="4">* </c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
