@@ -1,31 +1,55 @@
-﻿using System.Reflection;
 using HalconDotNet;
 
-namespace _NET_Halcon
+namespace WinFormsHalcon
 {
-    class Program
+    internal static class Program
     {
+        /// <summary>
+        ///  The main entry point for the application.
+        /// </summary>
+
         private static HTuple CameraParam;
         private static HTuple Pose;
         private static HTuple ImageFiles;
-
-        static void Main(string[] args)
+ 
+        [STAThread]
+        static void Main()
         {
-            // HOperatorSet.DevUpdateOff();
+            // Start a new form to visualize results
+            ApplicationConfiguration.Initialize();
+
+            Form1 form1 = new Form1();
+
+            form1.Load += Form1_Load;
+
+            Application.Run(form1);
+            
+        }
+
+        private static void Form1_Load(object sender, EventArgs e)
+        {
+            // Access the window variable from Form1
+            Form1 form1 = (Form1)sender;
+            HWindow window = form1.window;
+
+            // Continue your program logic here after the form has loaded
 
             // Read the calibration data.
             HTuple camPar = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\camera_parameters.cal";
             HTuple posePar = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\pose.dat";
-            
+
             HOperatorSet.ReadCamPar(camPar, out CameraParam);
             HOperatorSet.ReadPose(posePar, out Pose);
 
             // Read all images and prepare the alignment.
             HTuple imageDir = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\Images";
-            
+
             HOperatorSet.ListFiles(imageDir, new HTuple("files"), out ImageFiles);
             HObject Image;
             HOperatorSet.ReadImage(out Image, ImageFiles[0]);
+
+            Image.DispObj(window);
+
 
             // Matching 01: Build the ROI from basic regions
             HObject ModelRegion;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.2" halcon_version="23.05.0.0">
+<hdevelop file_version="1.2" halcon_version="23.11.0.0">
 <procedure name="main">
 <interface/>
 <body>
@@ -17,7 +17,7 @@
 <c></c>
 <c>* </c>
 <c>* Matching 01: Build the ROI from basic regions</c>
-<l>gen_circle (ModelRegion, 745.97600000, 874.34300000, 75.49250000)</l>
+<l>gen_circle (ModelRegion, 825.22100000, 755.79700000, 28.68470000)</l>
 <c>* </c>
 <c>* Matching 01: Reduce the model template</c>
 <l>reduce_domain (Image, ModelRegion, TemplateImage)</l>
@@ -88,7 +88,7 @@
 <l>Rows := NumMatchResult</l>
 <l>Columns := NumMatchResult</l>
 <l>create_matrix(Rows, Columns, 0, CircleConnectionsMatrixID)</l>
-<l>DistanceThreshold := 20  // Threshold for considering circles as neighbors</l>
+<l>DistanceThreshold := 30  // Threshold for considering circles as neighbors</l>
 <c></c>
 <c>    * Calculate distances between all pairs of detected circles</c>
 <l>    for I := 0 to NumMatchResult-1 by 1</l>
