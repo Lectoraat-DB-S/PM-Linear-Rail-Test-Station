@@ -35,25 +35,26 @@
             // 
             hSmartWindowControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             hSmartWindowControl1.AutoValidate = AutoValidate.EnableAllowFocusChange;
+            hSmartWindowControl1.Dock = DockStyle.Fill;
             hSmartWindowControl1.HDoubleClickToFitContent = true;
             hSmartWindowControl1.HDrawingObjectsModifier = HalconDotNet.HSmartWindowControl.DrawingObjectsModifier.None;
-            hSmartWindowControl1.HImagePart = new Rectangle(-168, 37, 976, 405);
+            hSmartWindowControl1.HImagePart = new Rectangle(-541, -210, 1722, 898);
             hSmartWindowControl1.HKeepAspectRatio = true;
             hSmartWindowControl1.HMoveContent = true;
             hSmartWindowControl1.HZoomContent = HalconDotNet.HSmartWindowControl.ZoomContent.WheelForwardZoomsIn;
-            hSmartWindowControl1.Location = new Point(9, 9);
+            hSmartWindowControl1.Location = new Point(0, 0);
             hSmartWindowControl1.Margin = new Padding(0);
             hSmartWindowControl1.Name = "hSmartWindowControl1";
-            hSmartWindowControl1.Size = new Size(782, 432);
+            hSmartWindowControl1.Size = new Size(1384, 961);
             hSmartWindowControl1.TabIndex = 0;
-            hSmartWindowControl1.WindowSize = new Size(782, 432);
+            hSmartWindowControl1.WindowSize = new Size(1384, 961);
             hSmartWindowControl1.Load += hSmartWindowControl1_Load;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1384, 961);
             Controls.Add(hSmartWindowControl1);
             Name = "Form1";
             Text = "Form1";

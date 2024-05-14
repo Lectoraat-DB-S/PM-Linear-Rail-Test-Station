@@ -22,8 +22,6 @@ namespace WinFormsHalcon
             this.MouseWheel += my_MouseWheel;
 
             window = hSmartWindowControl1.HalconWindow;
-            window.SetDraw("margin");
-            window.SetColor("cyan");
         }
 
         private void my_MouseWheel(object sender, MouseEventArgs e)
@@ -32,6 +30,13 @@ namespace WinFormsHalcon
             MouseEventArgs newe = new MouseEventArgs(e.Button, e.Clicks,
             e.X - pt.X, e.Y - pt.Y, e.Delta);
             hSmartWindowControl1.HSmartWindowControl_MouseWheel(sender, newe);
+        }
+
+        public void fitToWindow(object sender, EventArgs e)
+        {
+            // Simulate a double click event
+            MouseEventArgs args = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0);
+            window.ClearWindow();
         }
 
         private void Form1_Load_1(object sender, EventArgs e)

@@ -48,12 +48,10 @@ namespace WinFormsHalcon
             HObject Image;
             HOperatorSet.ReadImage(out Image, ImageFiles[0]);
 
-            Image.DispObj(window);
-
 
             // Matching 01: Build the ROI from basic regions
             HObject ModelRegion;
-            HOperatorSet.GenCircle(out ModelRegion, 745.976, 874.343, 75.4925);
+            HOperatorSet.GenCircle(out ModelRegion, 825.221, 755.797, 28.6);
 
             // Matching 01: Reduce the model template
             HObject TemplateImage;
@@ -84,64 +82,158 @@ namespace WinFormsHalcon
             // // Matching 01: Display the model contours
             // HWindow WindowHandle = new HWindow();
             // WindowHandle.OpenWindow(0, 0, 1000, 1000, 0, "visible", "", "");
-            // WindowHandle.DispObj(Image);
-            // WindowHandle.SetColor("green");
-            // WindowHandle.SetDraw("margin");
-            // WindowHandle.DispObj(ModelRegion);
-            // WindowHandle.DispObj(TransContours);
-            // WindowHandle.DispText("Press any key to continue", "image", 10, 10, "black", new HTuple(), new HTuple());
+            
+            Image.DispObj(window);              // WindowHandle.DispObj(Image);
+            window.SetColor("green");           // WindowHandle.SetColor("green");
+            window.SetDraw("margin");           // WindowHandle.SetDraw("margin");
+            ModelRegion.DispObj(window);        // WindowHandle.DispObj(ModelRegion);
+            TransContours.DispObj(window);      // WindowHandle.DispObj(TransContours
+
             // WindowHandle.HalconWindow.FlushBuffer();
             // Console.ReadKey();
             // WindowHandle.CloseWindow();
-            //
-            // // Matching 01: END of generated code for model initialization
-            // // Matching 01: BEGIN of generated code for model application
-            //
-            // // Set the search parameters
-            // HOperatorSet.SetGenericShapeModelParam(ModelID, "min_score", 0.99);
-            // HOperatorSet.SetGenericShapeModelParam(ModelID, "max_overlap", 0);
-            // HOperatorSet.SetGenericShapeModelParam(ModelID, "border_shape_models", "false");
-            // HOperatorSet.SetGenericShapeModelParam(ModelID, "pyramid_level_robust_tracking", "true");
-            //
-            // // Loop through all images
-            // for (int Index = 0; Index < ImageFiles.Length; Index++)
-            // {
-            //     HOperatorSet.ReadImage(out Image, ImageFiles[Index]);
-            //     WindowHandle.OpenWindow(0, 0, 1000, 1000, 0, "visible", "", "");
-            //     WindowHandle.DispObj(Image);
-            //
-            //     // Matching 01: Find the model
-            //     HObject MatchResultID;
-            //     HTuple NumMatchResult;
-            //     HOperatorSet.FindGenericShapeModel(Image, ModelID, 0, Math.PI, 0.5, 0.5, 0.6, "least_squares", 4,
-            //         0.75, out MatchResultID, out NumMatchResult);
-            //
-            //     // Retrieve results
-            //     for (int I = 0; I < NumMatchResult.Length; I++)
-            //     {
-            //         // Matching 01: Retrieve parameters of the detected match
-            //         HTuple Row, Column, Angle, ScaleRow, ScaleColumn, Score;
-            //         HHomMat2D HomMat2DResult;
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "row", out Row);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "column", out Column);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "angle", out Angle);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_row", out ScaleRow);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_column", out ScaleColumn);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "hom_mat_2d", out HomMat2DResult);
-            //         HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "score", out Score);
-            //
-            //         // Display the contours of the detected circles
-            //         HXLDCont MatchContour;
-            //         HOperatorSet.GetGenericShapeModelResultObject(out MatchContour, MatchResultID, I, "contours");
-            //         WindowHandle.SetColor("green");
-            //         WindowHandle.DispObj(MatchContour);
-            //     }
-            //
-            //     WindowHandle.DispText("Press any key to continue", "image", 10, 10, "black", new HTuple(), new HTuple());
-            //     WindowHandle.HalconWindow.FlushBuffer();
-            //     Console.ReadKey();
-            //     WindowHandle.CloseWindow();
-            // }
+            //Image.Dispose();
+
+
+            // Matching 01: END of generated code for model initialization
+            // Matching 01: BEGIN of generated code for model application
+
+            // Set the search parameters
+            HOperatorSet.SetGenericShapeModelParam(ModelID, "min_score", 0.99);
+            HOperatorSet.SetGenericShapeModelParam(ModelID, "max_overlap", 0);
+            HOperatorSet.SetGenericShapeModelParam(ModelID, "border_shape_models", "false");
+            HOperatorSet.SetGenericShapeModelParam(ModelID, "pyramid_level_robust_tracking", "true");
+
+
+            // Loop through all images
+            for (int Index = 0; Index < ImageFiles.Length; Index++)
+            {
+                window.ClearWindow();
+                window.FlushBuffer();
+
+                HOperatorSet.ReadImage(out Image, ImageFiles[Index]);
+                Image.DispObj(window);
+
+                // Matching 01: Find the model
+                HTuple MatchResultID;
+                HTuple NumMatchResult;
+                
+                HOperatorSet.FindGenericShapeModel(Image, ModelID, out MatchResultID, out NumMatchResult);
+
+                // Retrieve results
+                for (int I = 0; I < NumMatchResult.Length; I++)
+                {
+                    // Matching 01: Retrieve parameters of the detected match
+                    HTuple Row, Column, Angle, ScaleRow, ScaleColumn, Score;
+                    HTuple HomMat2DResult;
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "row", out Row);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "column", out Column);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "angle", out Angle);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_row", out ScaleRow);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_column", out ScaleColumn);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "hom_mat_2d", out HomMat2DResult);
+                    HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "score", out Score);
+
+                    // Display the contours of the detected circles
+                    HObject MatchContour;
+                    HOperatorSet.GetGenericShapeModelResultObject(out MatchContour, MatchResultID, I, "contours");
+                    window.SetColor("green");
+                    window.DispObj(MatchContour);
+                }
+
+                window.DispText("Press any key to continue", "image", 10, 10, "black", new HTuple(), new HTuple());
+                window.FlushBuffer();
+                //Console.ReadKey();
+
+                //PART TWO
+
+                HTuple Rows = NumMatchResult;
+                HTuple Cols = NumMatchResult;
+                HTuple CircleConnectionsMatrixID;
+
+                HOperatorSet.CreateMatrix(Rows, Cols, 0, out CircleConnectionsMatrixID);
+                double DistanceThreshold = 30;          //MAKE THIS DYNAMIC FOR RAIL LENGHT
+
+                for (int I = 0; I < NumMatchResult.D; I++)
+                {
+                    for (int J = 0; J < NumMatchResult.D; J++)
+                    {
+                        if (I != J)
+                        {
+                            // Calculate real center of the circles
+                            HObject MatchContour1, MatchContour2;
+                            HTuple Area;
+                            HTuple Row1, Column1, Row2, Column2;
+                            HTuple X1, Y1, X2, Y2;
+                            // Assuming you have CameraParam and Pose initialized properly
+                            HOperatorSet.GetGenericShapeModelResultObject(out MatchContour1, MatchResultID, I, "contours");
+                            HOperatorSet.GetGenericShapeModelResultObject(out MatchContour2, MatchResultID, J, "contours");
+                            HOperatorSet.AreaCenterPointsXld(MatchContour1, out Area, out Row1, out Column1);
+                            HOperatorSet.AreaCenterPointsXld(MatchContour2, out Area, out Row2, out Column2);
+
+                            // Convert the results to world coordinates
+                            HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, Row1, Column1, "mm", out X1, out Y1);
+                            HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, Row2, Column2, "mm", out X2, out Y2);
+
+                            // Calculate the distance between the current and other circles
+                            HTuple Distance;
+                            HOperatorSet.DistancePp(X1, Y1, X2, Y2, out Distance);
+
+                            // Check if the distance is below the threshold
+                            if (Distance < DistanceThreshold)
+                            {
+                                // Insert the distance into the matrix at the appropriate indices
+                                HOperatorSet.SetValueMatrix(CircleConnectionsMatrixID, I, J, Distance);
+                            }
+                        }
+                    }
+                }
+
+
+                // Draw lines between circles based on the matrix
+                for (int I = 0; I < Rows.D; I++)
+                {
+                    for (int J = 0; J < Cols.D; J++)
+                    {
+                        HTuple Distance;
+                        HOperatorSet.GetValueMatrix(CircleConnectionsMatrixID, I, J, out Distance);
+
+                        if (Distance > 0) // If there's a connection
+                        {
+                            // Calculate real center of the circles
+                            HObject MatchContour1, MatchContour2;
+                            HTuple Area;
+                            HTuple Row1, Col1, Row2, Col2;
+
+                            HOperatorSet.GetGenericShapeModelResultObject(out MatchContour1, MatchResultID, I, "contours");
+                            HOperatorSet.GetGenericShapeModelResultObject(out MatchContour2, MatchResultID, J, "contours");
+
+                            HOperatorSet.AreaCenterPointsXld(MatchContour1, out Area, out Row1, out Col1);
+                            HOperatorSet.AreaCenterPointsXld(MatchContour2, out Area, out Row2, out Col2);
+
+                            // Draw a line between the connected circles
+                            window.SetColor("pink");
+                            window.DispLine(Row1, Col1, Row2, Col2);
+
+                            // Draw a dot at the start and end of the line
+                            HTuple Radius = 5;
+                            window.SetColor("green");
+                            window.DispCross(Row1, Col1, 6.0, 0.0);
+                            window.DispCross(Row2, Col2, 6.0, 0.0);
+                            //window.DispCircle(Row1, Col1, 5);
+                            //window.DispCircle(Row2, Column2, 5);
+
+                            // Calculate the midpoint of the line
+                            double MidRow = (Row1.D + Row2.D) / 2;
+                            double MidColumn = (Col1.D + Col2.D) / 2;
+
+                            // Display the distance text
+                            window.DispText(Distance.ToString(), "image", MidRow, MidColumn, "red", new HTuple(), new HTuple());
+                        }
+                    }
+                }
+                window.FlushBuffer();
+            }
         }
     }
 }
