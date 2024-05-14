@@ -1,4 +1,5 @@
 using HalconDotNet;
+using MQTTnet.Client;
 
 namespace WinFormsHalcon
 {
@@ -11,7 +12,10 @@ namespace WinFormsHalcon
         private static HTuple CameraParam;
         private static HTuple Pose;
         private static HTuple ImageFiles;
- 
+        private static MQTT _mqttClient;
+        
+        private static string measurementTopic = "Csharp/mqtt";
+
         [STAThread]
         static void Main()
         {
@@ -26,13 +30,15 @@ namespace WinFormsHalcon
             
         }
 
-        private static void Form1_Load(object sender, EventArgs e)
+        private static async void Form1_Load(object sender, EventArgs e)
         {
             // Access the window variable from Form1
             Form1 form1 = (Form1)sender;
             HWindow window = form1.window;
 
-            // Continue your program logic here after the form has loaded
+            _mqttClient = new MQTT();
+
+            //START OF HALCON CODE
 
             // Read the calibration data.
             HTuple camPar = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\camera_parameters.cal";
@@ -45,17 +51,14 @@ namespace WinFormsHalcon
             HTuple imageDir = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\Images";
 
             HOperatorSet.ListFiles(imageDir, new HTuple("files"), out ImageFiles);
-            HObject Image;
-            HOperatorSet.ReadImage(out Image, ImageFiles[0]);
+            HOperatorSet.ReadImage(out HObject Image, ImageFiles[0]);
 
 
             // Matching 01: Build the ROI from basic regions
-            HObject ModelRegion;
-            HOperatorSet.GenCircle(out ModelRegion, 825.221, 755.797, 28.6);
+            HOperatorSet.GenCircle(out HObject ModelRegion, 825.221, 755.797, 28.6);
 
             // Matching 01: Reduce the model template
-            HObject TemplateImage;
-            HOperatorSet.ReduceDomain(Image, ModelRegion, out TemplateImage);
+            HOperatorSet.ReduceDomain(Image, ModelRegion, out HObject TemplateImage);
 
             // Matching 01: Create and train the shape model
             HTuple ModelID;
@@ -220,8 +223,6 @@ namespace WinFormsHalcon
                             window.SetColor("green");
                             window.DispCross(Row1, Col1, 6.0, 0.0);
                             window.DispCross(Row2, Col2, 6.0, 0.0);
-                            //window.DispCircle(Row1, Col1, 5);
-                            //window.DispCircle(Row2, Column2, 5);
 
                             // Calculate the midpoint of the line
                             double MidRow = (Row1.D + Row2.D) / 2;
@@ -229,6 +230,8 @@ namespace WinFormsHalcon
 
                             // Display the distance text
                             window.DispText(Distance.ToString(), "image", MidRow, MidColumn, "red", new HTuple(), new HTuple());
+                            
+                            await _mqttClient.PublishAsync(measurementTopic, "Coords " + I + " - " + J + " Distance" + Distance.ToString());
                         }
                     }
                 }
