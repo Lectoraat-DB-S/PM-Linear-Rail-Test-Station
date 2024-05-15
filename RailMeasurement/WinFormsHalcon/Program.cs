@@ -15,6 +15,7 @@ namespace WinFormsHalcon
         private static MQTT _mqttClient;
         
         private static string measurementTopic = "Csharp/mqtt";
+        private static List<string> measurementResults = new List<string>();
 
         [STAThread]
         static void Main()
@@ -83,19 +84,12 @@ namespace WinFormsHalcon
             HOperatorSet.AffineTransContourXld(ModelContours, out TransContours, HomMat2D);
 
             // // Matching 01: Display the model contours
-            // HWindow WindowHandle = new HWindow();
-            // WindowHandle.OpenWindow(0, 0, 1000, 1000, 0, "visible", "", "");
             
             Image.DispObj(window);              // WindowHandle.DispObj(Image);
             window.SetColor("green");           // WindowHandle.SetColor("green");
             window.SetDraw("margin");           // WindowHandle.SetDraw("margin");
             ModelRegion.DispObj(window);        // WindowHandle.DispObj(ModelRegion);
             TransContours.DispObj(window);      // WindowHandle.DispObj(TransContours
-
-            // WindowHandle.HalconWindow.FlushBuffer();
-            // Console.ReadKey();
-            // WindowHandle.CloseWindow();
-            //Image.Dispose();
 
 
             // Matching 01: END of generated code for model initialization
@@ -124,7 +118,7 @@ namespace WinFormsHalcon
                 HOperatorSet.FindGenericShapeModel(Image, ModelID, out MatchResultID, out NumMatchResult);
 
                 // Retrieve results
-                for (int I = 0; I < NumMatchResult.Length; I++)
+                for (int I = 0; I < NumMatchResult; I++)
                 {
                     // Matching 01: Retrieve parameters of the detected match
                     HTuple Row, Column, Angle, ScaleRow, ScaleColumn, Score;
@@ -155,7 +149,7 @@ namespace WinFormsHalcon
                 HTuple CircleConnectionsMatrixID;
 
                 HOperatorSet.CreateMatrix(Rows, Cols, 0, out CircleConnectionsMatrixID);
-                double DistanceThreshold = 30;          //MAKE THIS DYNAMIC FOR RAIL LENGHT
+                double DistanceThreshold = 30;          //MAKE THIS DYNAMIC FOR RAIL LENGTH
 
                 for (int I = 0; I < NumMatchResult.D; I++)
                 {
@@ -191,18 +185,20 @@ namespace WinFormsHalcon
                         }
                     }
                 }
-
-
+                
+                int testCounter = 0;
                 // Draw lines between circles based on the matrix
                 for (int I = 0; I < Rows.D; I++)
                 {
                     for (int J = 0; J < Cols.D; J++)
                     {
                         HTuple Distance;
+                        
                         HOperatorSet.GetValueMatrix(CircleConnectionsMatrixID, I, J, out Distance);
 
                         if (Distance > 0) // If there's a connection
                         {
+                            testCounter++;
                             // Calculate real center of the circles
                             HObject MatchContour1, MatchContour2;
                             HTuple Area;
@@ -223,6 +219,7 @@ namespace WinFormsHalcon
                             window.SetColor("green");
                             window.DispCross(Row1, Col1, 6.0, 0.0);
                             window.DispCross(Row2, Col2, 6.0, 0.0);
+                            window.DispText("Point " + testCounter, "image", Row1.D, Col1.D, "red", new HTuple(), new HTuple());
 
                             // Calculate the midpoint of the line
                             double MidRow = (Row1.D + Row2.D) / 2;
@@ -231,10 +228,14 @@ namespace WinFormsHalcon
                             // Display the distance text
                             window.DispText(Distance.ToString(), "image", MidRow, MidColumn, "red", new HTuple(), new HTuple());
                             
-                            await _mqttClient.PublishAsync(measurementTopic, "Coords " + I + " - " + J + " Distance" + Distance.ToString());
+                            // Add measured distance to list
+                            measurementResults.Add($"{measurementResults.Count + 1}-{measurementResults.Count + 2}: {Distance.D}");
                         }
                     }
                 }
+                // Send measurement results with mqtt
+                string payload = string.Join(", ", measurementResults);
+                await _mqttClient.PublishAsync("Csharp/mqtt/measurements", payload);
                 window.FlushBuffer();
             }
         }

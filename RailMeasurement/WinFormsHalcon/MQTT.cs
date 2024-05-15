@@ -14,6 +14,7 @@ namespace WinFormsHalcon
         private IMqttClient mqttClient;
         
         private static string WSuri = "ws://192.168.6.61:1884/ws";
+        private static string host = "10.38.4.165";
         private static int port = 1883;
         private static string clientId = Guid.NewGuid().ToString();
         private static string username = "zigbee";
@@ -36,7 +37,8 @@ namespace WinFormsHalcon
             using (var mqttClient = mqttFactory.CreateMqttClient())
             {
                 var mqttClientOptions = new MqttClientOptionsBuilder()
-                    .WithWebSocketServer(o => o.WithUri(WSuri))
+                    //.WithWebSocketServer(o => o.WithUri(WSuri))
+                    .WithTcpServer(host, port)
                     .WithCredentials(username, password)
                     .WithClientId(clientId)
                     .Build();
