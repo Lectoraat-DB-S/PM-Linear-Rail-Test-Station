@@ -6,14 +6,19 @@ HX711 scale;
 
 const char* ssid = "AWL";
 const char* password = "4wLPR3shared!@-";
-const char* mqtt_server = "test.mosquitto.org";
-const char* mqtt_topic = "loadcell";
+const char* mqtt_server = "10.38.4.165";
+const char* mqtt_username = "zigbee";
+const char* mqtt_password = "zigbeemqtt";
+const char* mqtt_topic_loadcell = "loadcell";
+const char* mqtt_topic_calibrate = "loadcell/calibrate";
+const char* mqtt_topic_measure = "loadcell/measure";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 uint8_t dataPin = D5; // DOUT pin
 uint8_t clockPin = D6; // SCK pin
+bool calibrated = false;
 
 void setup_wifi() {
   delay(10);
@@ -32,15 +37,31 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  // Handle incoming MQTT messages if needed
+  if (strcmp(topic, mqtt_topic_calibrate) == 0) {
+    calibrateLoadCell();
+  } else if (strcmp(topic, mqtt_topic_measure) == 0) {
+    if (!calibrated) {
+      Serial.println("Error: Scale not calibrated.");
+      return;
+    }
+    float weight = scale.get_units(10);
+    Serial.print("Weight: ");
+    Serial.print(weight);
+    Serial.println(" grams");
+    if (client.connected()) {
+      String weightStr = String(weight, 2);
+      client.publish(mqtt_topic_loadcell, weightStr.c_str());
+    }
+  }
 }
 
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP8266Client")) {
+    if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
-      client.subscribe(mqtt_topic);
+      client.subscribe(mqtt_topic_calibrate);
+      client.subscribe(mqtt_topic_measure);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -69,7 +90,7 @@ void calibrateLoadCell() {
     Serial.read();
   }
   scale.set_scale(1005); // Set calibration weight to 63 grams
-  
+
   Serial.println("\nTare scale, press a key to continue");
   while (!Serial.available()) {
     delay(100);
@@ -79,8 +100,8 @@ void calibrateLoadCell() {
   }
   scale.tare();
   Serial.println("Scale calibrated with 63 grams.");
+  calibrated = true;
 }
-
 
 void setup() {
   Serial.begin(115200);
@@ -88,9 +109,6 @@ void setup() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   scale.begin(dataPin, clockPin);
-
-  // Calibrate the load cell
-  calibrateLoadCell();
 }
 
 void loop() {
@@ -98,18 +116,5 @@ void loop() {
     reconnect();
   }
   client.loop();
-
-  // Read weight value from load cell
-  float weight = scale.get_units(10);
-  Serial.print("Weight: ");
-  Serial.print(weight);
-  Serial.println(" grams");
-
-  // Publish weight value to MQTT
-  if (client.connected()) {
-    String weightStr = String(weight, 2);
-    client.publish(mqtt_topic, weightStr.c_str());
-  }
-
   delay(1000); // Wait 1 second before reading again
 }
