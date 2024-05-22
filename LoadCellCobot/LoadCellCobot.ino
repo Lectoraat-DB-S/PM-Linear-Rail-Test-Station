@@ -9,13 +9,9 @@ const char* password = "4wLPR3shared!@-";
 const char* mqtt_server = "10.38.4.165";
 const char* mqtt_username = "zigbee";
 const char* mqtt_password = "zigbeemqtt";
-const char* mqtt_topic_loadcell = "loadcell";
-const char* mqtt_topic_calibrate_start = "loadcell/calibrate/start";
-const char* mqtt_topic_calibrate_removed = "loadcell/calibrate/removed";
-const char* mqtt_topic_calibrate_placed = "loadcell/calibrate/placed";
-const char* mqtt_topic_calibrate_done = "loadcell/calibrate/done";
-const char* mqtt_topic_measure = "loadcell/measure"; // Declare mqtt_topic_measure
-const char* mqtt_response_topic = "loadcell/response";
+const char* mqtt_topic_calibration = "RTS/loadcell/calibration";
+const char* mqtt_topic_measurement = "RTS/loadcell/measurement"; // Declare mqtt_topic_measure
+const char* mqtt_topic_result = "RTS/loadcell/result";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -24,6 +20,7 @@ uint8_t dataPin = D5; // DOUT pin
 uint8_t clockPin = D6; // SCK pin
 bool calibrated = false;
 bool calibrationInProgress = false;
+int stage = 0;
 
 void setup_wifi() {
   delay(10);
@@ -42,44 +39,45 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  if (strcmp(topic, mqtt_topic_calibrate_start) == 0) {
-    if (!calibrationInProgress) {
+  payload[length] = '\0'; // Null-terminate the payload
+  String message = String((char*)payload);
+  if (strcmp(topic, mqtt_topic_calibration) == 0) {
+    if (message == "0") {
       startCalibration();
     }
-  } else if (strcmp(topic, mqtt_topic_calibrate_removed) == 0) {
-    if (calibrationInProgress) {
-      weightRemoved();
-    }
-  } else if (strcmp(topic, mqtt_topic_calibrate_placed) == 0) {
-    if (calibrationInProgress) {
-      weightPlaced();
-    }
-  } else if (strcmp(topic, mqtt_topic_measure) == 0) {
-    if (calibrated) {
-      float weight = scale.get_units(10);
-      String weightStr = String(weight, 2);
-      client.publish(mqtt_topic_loadcell, weightStr.c_str());
-    } else {
-      client.publish(mqtt_response_topic, "Error: Scale not calibrated.");
+  } else if (strcmp(topic, mqtt_topic_measurement) == 0) {
+    if (message == "measure") {
+      if (calibrated) {
+        float weight = scale.get_units(10);
+        String weightStr = String(weight, 2);
+        client.publish(mqtt_topic_result, weightStr.c_str());
+      } else {
+        client.publish(mqtt_topic_calibration, "Error: Scale not calibrated.");
+      }
     }
   }
 }
 
 void startCalibration() {
-  calibrationInProgress = true;
-  client.publish(mqtt_response_topic, "Remove weight from scale and publish 0 on loadcell/calibrate/removed topic");
-}
-
-void weightRemoved() {
-  scale.tare();
-  client.publish(mqtt_response_topic, "Place weight on the scale and publish 0 on loadcell/calibrate/placed topic");
-}
-
-void weightPlaced() {
-  scale.set_scale(1005); // Set calibration weight to 1 gram
-  calibrationInProgress = false;
-  calibrated = true;
-  client.publish(mqtt_response_topic, "Tare scale and calibration completed");
+  switch (stage) {
+    case 0:
+      calibrationInProgress = true;
+      client.publish(mqtt_topic_calibration, "Make sure no weight is attached to the gripper");
+      stage++;
+      break;
+    case 1:
+      scale.tare();
+      client.publish(mqtt_topic_calibration, "Place weight on the scale");
+      stage++;
+      break;
+    case 2:
+      scale.set_scale(1005); // Set calibration weight to 1 gram
+      calibrationInProgress = false;
+      calibrated = true;
+      client.publish(mqtt_topic_calibration, "Tare scale and calibration completed");
+      stage = 0;
+      break;
+  }
 }
 
 void reconnect() {
@@ -87,10 +85,8 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
-      client.subscribe(mqtt_topic_calibrate_start);
-      client.subscribe(mqtt_topic_calibrate_removed);
-      client.subscribe(mqtt_topic_calibrate_placed);
-      client.subscribe(mqtt_topic_measure);
+      client.subscribe(mqtt_topic_calibration);
+      client.subscribe(mqtt_topic_measurement);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
