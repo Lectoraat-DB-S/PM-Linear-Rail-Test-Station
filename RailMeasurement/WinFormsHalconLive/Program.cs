@@ -50,8 +50,11 @@ namespace WinFormsHalcon
         
         private static string ConvertImageToBase64(HObject image)
         {
-            HOperatorSet.WriteImage(image, "jpeg", 0, "temp_image.jpg");
-            byte[] imageBytes = File.ReadAllBytes("temp_image.jpg");
+            HObject resizedImage;
+            HOperatorSet.ZoomImageSize(image, out resizedImage, 687, 459, "constant");
+            
+            HOperatorSet.WriteImage(resizedImage, "jpeg", 0, "temp_image_resized.jpg");
+            byte[] imageBytes = File.ReadAllBytes("temp_image_resized.jpg");
             return Convert.ToBase64String(imageBytes);
         }
 
@@ -124,12 +127,8 @@ namespace WinFormsHalcon
             
             Image.DispObj(window);
             // Convert the image to Base64 and send it
-            // string base64Image = ConvertImageToBase64(Image);
-            
-            HOperatorSet.WriteImage(Image, "jpeg", 0, "temp_image.jpg");
-            byte[] imageBytes = File.ReadAllBytes("temp_image.jpg");
-            
-            await _mqttClient.PublishImageAsync("RTS/vision/image", imageBytes);
+            string base64Image = ConvertImageToBase64(Image);
+            await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
 
             // Matching 01: Find the model
             HTuple MatchResultID;

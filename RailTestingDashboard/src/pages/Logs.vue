@@ -11,12 +11,15 @@ export default defineComponent({
     const receivedMeasurements = ref<string[]>([]);
     const receivedLoadcellResult = ref<string[]>([]);
     const receivedLoadcellCalib = ref<string[]>([]);
+    const receivedImage = ref<string | null>(null);
 
     const DebugTopic = ref('dashboard/debug');
     const MeasurementsTopic = ref('vision/measurements');
     const LoacellMeasurementsTopic = ref('loadcell/measurement');
     const LoacellResultTopic = ref('loadcell/result');
     const LoadcellCalibTopic = ref('loadcell/calibration')
+    const TakePictureTopic = ref('vision/picture');
+    const ImageTopic = ref('vision/image');
 
     $mqtt.subscribe(DebugTopic.value, (data: string) => {
       receivedDebug.value.push(data);
@@ -39,6 +42,11 @@ export default defineComponent({
         console.log(data)
       }
     });
+    $mqtt.subscribe(ImageTopic.value, (data: string) => {
+      // Assuming data is base64 string
+      receivedImage.value = `data:image/jpeg;base64,${data}`;
+      console.log('Image received');
+    });
 
     const sendMessage = () => {
       if (messageToSend.value.trim() !== '') {
@@ -58,12 +66,27 @@ export default defineComponent({
       console.log(messageToSend.value);
     };
 
+    const sendTakePicture = () => {
+      $mqtt.publish(TakePictureTopic.value, "Take a picture!", 'Qr');
+      console.log(messageToSend.value);
+    };
+
     const clearLoadcell = () => {
       receivedLoadcellResult.value  = [];
       receivedLoadcellCalib.value  = [];
     };
 
-    return { messageToSend, receivedDebug, receivedMeasurements, receivedLoadcellResult, receivedLoadcellCalib, sendMessage , sendLoadcellCalib, sendLoadcellMeasurement, clearLoadcell };
+    return { messageToSend,
+      receivedDebug,
+      receivedMeasurements,
+      receivedLoadcellResult,
+      receivedLoadcellCalib,
+      receivedImage,
+      sendMessage,
+      sendLoadcellCalib,
+      sendLoadcellMeasurement,
+      sendTakePicture,
+      clearLoadcell };
   }
 });
 </script>
@@ -114,6 +137,19 @@ export default defineComponent({
               <ul>
                 <li v-for="(message, index) in receivedLoadcellResult" :key="index">{{ message }}</li>
               </ul>
+            </q-card-section>
+          </q-card>
+        </div>
+        <div class="col-grow child-container">
+          <q-card bordered style="margin: 5px">
+            <q-card-section>
+              <div class="q-pa-md q-gutter-sm">
+                <q-btn color="primary" text-color="black" @click="sendTakePicture" label="Take picture" />
+              </div>
+              <div class="text-h6">Received Image:</div>
+              <div v-if="receivedImage" class="q-mt-md">
+                <img :src="receivedImage" alt="Received Image" style="max-width: 100%; max-height: 400px;" />
+              </div>
             </q-card-section>
           </q-card>
         </div>
