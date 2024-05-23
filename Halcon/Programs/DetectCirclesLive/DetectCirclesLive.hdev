@@ -14,7 +14,7 @@
 <l>*read_pose ('pose.dat', Pose)</l>
 <c></c>
 <c></c>
-<l>read_image (Image, 'C:/Users/lucas/Documents/GitHub/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesLive/image_0027.png')</l>
+<l>read_image (Image, 'C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesLive/image_0027.png')</l>
 <c></c>
 <c></c>
 <c>* Matching 01: Build the ROI from basic regions</c>
