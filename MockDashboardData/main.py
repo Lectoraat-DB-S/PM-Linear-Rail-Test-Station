@@ -4,6 +4,7 @@ import sys
 import json
 import time
 import random
+from jsonschema import validate
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -42,6 +43,7 @@ def mqtt_init():
     signal.signal(signal.SIGINT, handle_exit)
 
     mqttc.connect("192.168.6.61", 1884, 60)
+    # mqttc.connect("10.38.4.165", 1884, 60)
 
     return mqttc
 
@@ -60,6 +62,22 @@ def generate_json(distance_from_start_to_holes, distance_between_holes, distance
         "distance_from_first_to_last_hole": distance_from_first_to_last_hole,
         "length": length
     }
+
+    # Define the schema
+    schema = {
+        "type": "object",
+        "properties": {
+            "distance_from_start_to_holes": {"type": "array", "items": {"type": "number"}},
+            "distance_between_holes": {"type": "array", "items": {"type": "number"}},
+            "distance_from_first_to_last_hole": {"type": "number"},
+            "length": {"type": "number"}
+        },
+        "required": ["distance_from_start_to_holes", "distance_between_holes", "distance_from_first_to_last_hole", "length"]
+    }
+
+    # Validate the generated JSON data against the schema
+    validate(instance=data, schema=schema)
+
     return json.dumps(data)
 
 
