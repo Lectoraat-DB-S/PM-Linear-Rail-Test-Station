@@ -39,7 +39,7 @@ namespace WinFormsHalcon
 
             _mqttClient = new MQTT();
             
-            var HalconInstance = InitializeHalcon(MainWindow);
+            var HalconInstance = await InitializeHalcon(MainWindow);
             
             ModelID = HalconInstance.Item1;
             AcqHandle = HalconInstance.Item2;
@@ -58,7 +58,8 @@ namespace WinFormsHalcon
             return Convert.ToBase64String(imageBytes);
         }
 
-        private static Tuple<HTuple?, HTuple?> InitializeHalcon(HWindow? _window)
+        private static async Task<Tuple<HTuple?, HTuple?>> InitializeHalcon(HWindow? _window)
+
         {
             // Read the calibration data.
             HTuple camPar = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\camera_parameters.cal";
@@ -75,7 +76,7 @@ namespace WinFormsHalcon
             HOperatorSet.ReadImage(out Image, "C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesLive/image_0027.png");
             
             // Matching 01: Build the ROI from basic regions
-            HOperatorSet.GenCircle(out HObject ModelRegion, 825.221, 755.797, 28.6);
+            HOperatorSet.GenCircle(out HObject ModelRegion, 756.967, 491.705, 41.7504);
 
             // Matching 01: Reduce the model template
             HOperatorSet.ReduceDomain(Image, ModelRegion, out HObject TemplateImage);
@@ -125,11 +126,16 @@ namespace WinFormsHalcon
             
             HOperatorSet.GrabImage(out HObject Image, AcqHandle);
             
+            //DEBUG
+            //HOperatorSet.ReadImage(out Image, "C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesImage/Images/image_0039.png");
+            
             Image.DispObj(window);
-            // Convert the image to Base64 and send it
-            string base64Image = ConvertImageToBase64(Image);
-            await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
-
+            // // Convert the image to Base64 and send it
+            // string base64Image = ConvertImageToBase64(Image);
+            // await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
+            
+            //DEBUG
+            
             // Matching 01: Find the model
             HTuple MatchResultID;
             HTuple NumMatchResult;
@@ -163,10 +169,6 @@ namespace WinFormsHalcon
                 window.SetColor("green");
                 window.DispObj(MatchContour);
             }
-
-            window.DispText("Press any key to continue", "image", 10, 10, "black", new HTuple(), new HTuple());
-            window.FlushBuffer();
-            //Console.ReadKey();
 
             //PART TWO
 
@@ -261,6 +263,10 @@ namespace WinFormsHalcon
             // Send measurement results with mqtt
             string payload = string.Join(", ", measurementResults);
             await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
+            
+            HOperatorSet.DumpWindowImage(out Image, window);
+            string base64Image = ConvertImageToBase64(Image);
+            await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
             window.FlushBuffer();
         }
     }
