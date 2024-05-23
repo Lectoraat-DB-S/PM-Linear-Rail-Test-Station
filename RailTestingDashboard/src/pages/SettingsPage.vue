@@ -9,7 +9,7 @@ export default defineComponent({
     const MqttHost = ref<string | null>(null) // Define type for ip as string or null
 
     const ipHint = computed(() => {
-      return MqttHost.value && !ipRegex.test(MqttHost.value) ? 'Please enter a valid IP address' : ''
+      return MqttHost.value && !ipRegex.test(<string>MqttHost.value) ? 'Please enter a valid IP address' : ''
     })
 
     return {
