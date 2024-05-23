@@ -15,7 +15,7 @@ export default {
 </script>
 
 <template>
-  <div class="q-pa-md example-row-equal-width" style="padding: 0">
+  <div class="q-pa-md example-row-equal-width" style="padding: 0; max-width: 600px">
     <div class="row">
       <div class="col">
         <div class="q-pa-md">
