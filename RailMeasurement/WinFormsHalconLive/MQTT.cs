@@ -76,17 +76,6 @@ namespace WinFormsHalcon
             await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
             Console.WriteLine("MQTT application message is published.");
         }
-        
-        public async Task PublishImageAsync(string topic, byte[] payload)
-        {
-            var applicationMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(topic)
-                .WithPayload(payload)
-                .Build();
-
-            await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
-            Console.WriteLine("MQTT application message is published.");
-        }
 
         private async Task SubscribeAsync(string topic)
         {
