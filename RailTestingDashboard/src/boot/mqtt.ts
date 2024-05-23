@@ -10,13 +10,22 @@ export default boot(({ app }) => {
       },
 
       MqttOptions: {
-        host: '192.168.6.61',
+        host: '10.38.4.165',
         port: 1884,
         clientId: `MyID-${Math.random() * 9999}`,
-        mainTopic: 'MAIN',
+        mainTopic: 'RTS',
         username: 'zigbee',
         password: 'zigbeemqtt',
       },
+
+      // MqttOptions: {
+      //   host: '192.168.6.61',
+      //   port: 1884,
+      //   clientId: `MyID-${Math.random() * 9999}`,
+      //   mainTopic: 'MAIN',
+      //   username: 'zigbee',
+      //   password: 'zigbeemqtt',
+      // },
     }),
   );
 });
