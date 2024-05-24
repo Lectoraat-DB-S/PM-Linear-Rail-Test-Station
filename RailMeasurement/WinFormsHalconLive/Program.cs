@@ -17,10 +17,19 @@ namespace WinFormsHalcon
         private static MQTT? _mqttClient;
         
         private static readonly List<string> measurementResults = new();
+        
+        public class PointInfo
+        {
+            public int Index { get; set; }
+            public double Row { get; set; }
+            public double Column { get; set; }
+        }
 
         [STAThread]
         static void Main()
         {
+            Application.ApplicationExit += OnApplicationExit;
+            
             // Start a new form to visualize results
             ApplicationConfiguration.Initialize();
 
@@ -29,7 +38,20 @@ namespace WinFormsHalcon
             form1.Load += Form1_Load;
 
             Application.Run(form1);
-            
+        }
+        
+        private static void OnApplicationExit(object sender, EventArgs e)
+        {
+            CloseFramegrabber();
+        }
+
+        private static void CloseFramegrabber()
+        {
+            if (AcqHandle != null)
+            {
+                HOperatorSet.CloseFramegrabber(AcqHandle);
+                AcqHandle = null;
+            }
         }
         
         private static async void Form1_Load(object sender, EventArgs e)
@@ -38,15 +60,15 @@ namespace WinFormsHalcon
             MainWindow = form1.window;
 
             _mqttClient = new MQTT();
-            
+    
             var HalconInstance = await InitializeHalcon(MainWindow);
-            
+    
             ModelID = HalconInstance.Item1;
             AcqHandle = HalconInstance.Item2;
 
-            await GrabAndProcessImage(MainWindow, ModelID, AcqHandle);
-            //_mqttClient.SubscribeAsync("RTS/vision/picture");
+            //await CaptureAndProcessMultipleImages(MainWindow, ModelID, AcqHandle);
         }
+
         
         private static string ConvertImageToBase64(HObject image)
         {
@@ -118,8 +140,56 @@ namespace WinFormsHalcon
 
             return new Tuple<HTuple?, HTuple?>(ModelID, AcqHandle);
         }
+        
+        private static void CombineMeasurements()
+        {
+            // Combine the measurements from two images.
+            // For simplicity, assume you have the measurements from hole 1-6 and 6-12.
+            // You can modify this method to handle the actual logic required for your case.
 
-        public static async Task GrabAndProcessImage(HWindow? window, HTuple? ModelID, HTuple? AcqHandle)
+            if (measurementResults.Count == 0)
+                return;
+
+            List<string> combinedMeasurements = new List<string>();
+
+            // Example combining logic (simplified)
+            for (int i = 0; i < measurementResults.Count - 1; i++)
+            {
+                combinedMeasurements.Add(measurementResults[i]);
+            }
+
+            measurementResults.Clear();
+            measurementResults.AddRange(combinedMeasurements);
+        }
+        
+        public static async Task CaptureAndProcessMultipleImages(HWindow? window, HTuple? ModelID, HTuple? AcqHandle)
+        {
+            // Capture the first image and process it
+            await GrabAndProcessImage(window, ModelID, AcqHandle, false);
+
+            // Move the cobot to the next position
+            await MoveCobotAsync(150); // Adjust the move distance based on your setup
+            await Task.Delay(2000); // Wait for the cobot to reach the position
+
+            // Capture the second image and process it
+            await GrabAndProcessImage(window, ModelID, AcqHandle, true);
+
+            // Combine the measurements from both images
+            CombineMeasurements();
+
+            // Send the combined measurement results with MQTT
+            string payload = string.Join(", ", measurementResults);
+            await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
+        }
+
+        private static async Task MoveCobotAsync(double distance)
+        {
+            string moveCommand = $"MOVE {distance}";
+            await _mqttClient.PublishAsync("RTS/cobot/move", moveCommand);
+            await Task.Delay(2000);
+        }
+
+        public static async Task GrabAndProcessImage(HWindow? window, HTuple? ModelID, HTuple? AcqHandle, bool isSecondImage)
         {
             window.ClearWindow();
             window.FlushBuffer();
@@ -128,14 +198,10 @@ namespace WinFormsHalcon
             
             //DEBUG
             //HOperatorSet.ReadImage(out Image, "C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesImage/Images/image_0039.png");
-            
-            Image.DispObj(window);
-            // // Convert the image to Base64 and send it
-            // string base64Image = ConvertImageToBase64(Image);
-            // await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
-            
             //DEBUG
             
+            Image.DispObj(window);
+
             // Matching 01: Find the model
             HTuple MatchResultID;
             HTuple NumMatchResult;
@@ -148,68 +214,49 @@ namespace WinFormsHalcon
                 return;
             }
 
-            
-            // Retrieve results
-            for (int I = 0; I < NumMatchResult; I++)
+            List<PointInfo> points = new List<PointInfo>();
+            for (int i = 0; i < NumMatchResult; i++)
             {
-                // Matching 01: Retrieve parameters of the detected match
-                HTuple Row, Column, Angle, ScaleRow, ScaleColumn, Score;
-                HTuple HomMat2DResult;
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "row", out Row);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "column", out Column);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "angle", out Angle);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_row", out ScaleRow);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "scale_column", out ScaleColumn);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "hom_mat_2d", out HomMat2DResult);
-                HOperatorSet.GetGenericShapeModelResult(MatchResultID, I, "score", out Score);
-
-                // Display the contours of the detected circles
-                HObject MatchContour;
-                HOperatorSet.GetGenericShapeModelResultObject(out MatchContour, MatchResultID, I, "contours");
-                window.SetColor("green");
-                window.DispObj(MatchContour);
+                HTuple row, column;
+                HOperatorSet.GetGenericShapeModelResult(MatchResultID, i, "row", out row);
+                HOperatorSet.GetGenericShapeModelResult(MatchResultID, i, "column", out column);
+                points.Add(new PointInfo { Index = i, Row = row.D, Column = column.D });
             }
 
-            //PART TWO
+            // Sort the points based on their row (Y) coordinates
+            points.Sort((p1, p2) => p1.Row.CompareTo(p2.Row));
 
             HTuple Rows = NumMatchResult;
             HTuple Cols = NumMatchResult;
             HTuple CircleConnectionsMatrixID;
 
             HOperatorSet.CreateMatrix(Rows, Cols, 0, out CircleConnectionsMatrixID);
-            double DistanceThreshold = 30;          //MAKE THIS DYNAMIC FOR RAIL LENGTH
+            const double DistanceThreshold = 30; //MAKE THIS DYNAMIC FOR RAIL LENGTH
 
             for (int I = 0; I < NumMatchResult.D; I++)
             {
-                for (int J = 0; J < NumMatchResult.D; J++)
+                for (int J = I + 1; J < NumMatchResult.D; J++) // Start from I + 1 to avoid duplicate pairs
                 {
-                    if (I != J)
+                    // Calculate real center of the circles
+                    HTuple row1 = points[I].Row;
+                    HTuple column1 = points[I].Column;
+                    HTuple row2 = points[J].Row;
+                    HTuple column2 = points[J].Column;
+
+                    // Convert the results to world coordinates (if necessary)
+                    HTuple x1, y1, x2, y2;
+                    HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, row1, column1, "mm", out x1, out y1);
+                    HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, row2, column2, "mm", out x2, out y2);
+
+                    // Calculate the distance between the current and other circles
+                    HTuple distance;
+                    HOperatorSet.DistancePp(x1, y1, x2, y2, out distance);
+
+                    // Check if the distance is below the threshold
+                    if (distance < DistanceThreshold)
                     {
-                        // Calculate real center of the circles
-                        HObject MatchContour1, MatchContour2;
-                        HTuple Area;
-                        HTuple Row1, Column1, Row2, Column2;
-                        HTuple X1, Y1, X2, Y2;
-                        // Assuming you have CameraParam and Pose initialized properly
-                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour1, MatchResultID, I, "contours");
-                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour2, MatchResultID, J, "contours");
-                        HOperatorSet.AreaCenterPointsXld(MatchContour1, out Area, out Row1, out Column1);
-                        HOperatorSet.AreaCenterPointsXld(MatchContour2, out Area, out Row2, out Column2);
-
-                        // Convert the results to world coordinates
-                        HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, Row1, Column1, "mm", out X1, out Y1);
-                        HOperatorSet.ImagePointsToWorldPlane(CameraParam, Pose, Row2, Column2, "mm", out X2, out Y2);
-
-                        // Calculate the distance between the current and other circles
-                        HTuple Distance;
-                        HOperatorSet.DistancePp(X1, Y1, X2, Y2, out Distance);
-
-                        // Check if the distance is below the threshold
-                        if (Distance < DistanceThreshold)
-                        {
-                            // Insert the distance into the matrix at the appropriate indices
-                            HOperatorSet.SetValueMatrix(CircleConnectionsMatrixID, I, J, Distance);
-                        }
+                        // Insert the distance into the matrix at the appropriate indices
+                        HOperatorSet.SetValueMatrix(CircleConnectionsMatrixID, I, J, distance);
                     }
                 }
             }
@@ -218,10 +265,10 @@ namespace WinFormsHalcon
             // Draw lines between circles based on the matrix
             for (int I = 0; I < Rows.D; I++)
             {
-                for (int J = 0; J < Cols.D; J++)
+                for (int J = I + 1; J < Cols.D; J++) // Start from I + 1 to avoid duplicate pairs
                 {
                     HTuple Distance;
-                    
+
                     HOperatorSet.GetValueMatrix(CircleConnectionsMatrixID, I, J, out Distance);
 
                     if (Distance > 0) // If there's a connection
@@ -232,8 +279,8 @@ namespace WinFormsHalcon
                         HTuple Area;
                         HTuple Row1, Col1, Row2, Col2;
 
-                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour1, MatchResultID, I, "contours");
-                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour2, MatchResultID, J, "contours");
+                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour1, MatchResultID, points[I].Index, "contours");
+                        HOperatorSet.GetGenericShapeModelResultObject(out MatchContour2, MatchResultID, points[J].Index, "contours");
 
                         HOperatorSet.AreaCenterPointsXld(MatchContour1, out Area, out Row1, out Col1);
                         HOperatorSet.AreaCenterPointsXld(MatchContour2, out Area, out Row2, out Col2);
@@ -254,20 +301,17 @@ namespace WinFormsHalcon
 
                         // Display the distance text
                         window.DispText(Distance.ToString(), "image", MidRow, MidColumn, "red", new HTuple(), new HTuple());
-                        
+
                         // Add measured distance to list
                         measurementResults.Add($"{measurementResults.Count + 1}-{measurementResults.Count + 2}: {Distance.D}");
                     }
                 }
             }
-            // Send measurement results with mqtt
-            string payload = string.Join(", ", measurementResults);
-            await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
-            
             HOperatorSet.DumpWindowImage(out Image, window);
             string base64Image = ConvertImageToBase64(Image);
-            await _mqttClient.PublishAsync("RTS/vision/image", base64Image);
+            await _mqttClient!.PublishAsync("RTS/vision/image", base64Image);
             window.FlushBuffer();
         }
+
     }
 }
