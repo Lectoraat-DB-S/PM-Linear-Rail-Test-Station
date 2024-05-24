@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MQTTnet;
+﻿using MQTTnet;
 using MQTTnet.Client;
 
 namespace WinFormsHalcon
@@ -15,8 +12,8 @@ namespace WinFormsHalcon
         private static readonly string host = "10.38.4.165";
         private static readonly int port = 1883;
         private static readonly string clientId = Guid.NewGuid().ToString();
-        private static readonly string username = "zigbee";
-        private static readonly string password = "zigbeemqtt";
+        private const string username = "zigbee";
+        private const string password = "zigbeemqtt";
 
         public MQTT()
         {
@@ -32,11 +29,11 @@ namespace WinFormsHalcon
 
             mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
-                Console.WriteLine($"Received message on topic {e.ApplicationMessage.Topic}: {e.ApplicationMessage.ConvertPayloadToString()}");
+                Console.WriteLine($@"Received message on topic {e.ApplicationMessage.Topic}: {e.ApplicationMessage.ConvertPayloadToString()}");
 
                 if (e.ApplicationMessage.Topic == "RTS/vision/picture")
                 {
-                    await Program.GrabAndProcessImage(Program.MainWindow, Program.ModelID, Program.AcqHandle);
+                    await Program.CaptureAndProcessMultipleImages(Program.MainWindow, Program.ModelID, Program.AcqHandle);
                 }
             };
 
@@ -52,7 +49,7 @@ namespace WinFormsHalcon
             try
             {
                 await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
-                Console.WriteLine("MQTT client connected.");
+                Console.WriteLine(@"MQTT client connected.");
 
                 // Subscribe to the topic once connected
                 await SubscribeAsync("RTS/vision/picture");
@@ -62,7 +59,7 @@ namespace WinFormsHalcon
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"MQTT connection error: {ex.Message}");
+                Console.WriteLine($@"MQTT connection error: {ex.Message}");
             }
         }
 
@@ -74,7 +71,7 @@ namespace WinFormsHalcon
                 .Build();
 
             await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
-            Console.WriteLine("MQTT application message is published.");
+            Console.WriteLine(@"MQTT application message is published.");
         }
 
         private async Task SubscribeAsync(string topic)
@@ -86,7 +83,7 @@ namespace WinFormsHalcon
                 .Build();
 
             await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
-            Console.WriteLine($"Subscribed to topic: {topic}");
+            Console.WriteLine($@"Subscribed to topic: {topic}");
         }
     }
 }
