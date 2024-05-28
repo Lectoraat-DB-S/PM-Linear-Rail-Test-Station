@@ -95,7 +95,9 @@ namespace WinFormsHalcon
             HOperatorSet.OpenFramegrabber("USB3Vision", 1, 1, 0, 0, 0, 0, "progressive", -1, "default", -1, "false", "default", "2BA200004153_DahengImaging_MER2200019U3M", 0, -1, out AcqHandle);
             
             HObject Image;
-            HOperatorSet.ReadImage(out Image, "C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesLive/image_0027.png");
+            HTuple imagePath = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\image_0027.png";
+            HOperatorSet.ReadImage(out Image, imagePath);
+            
             
             // Matching 01: Build the ROI from basic regions
             HOperatorSet.GenCircle(out HObject ModelRegion, 756.967, 491.705, 41.7504);
@@ -231,7 +233,7 @@ namespace WinFormsHalcon
             HTuple CircleConnectionsMatrixID;
 
             HOperatorSet.CreateMatrix(Rows, Cols, 0, out CircleConnectionsMatrixID);
-            const double DistanceThreshold = 30; //MAKE THIS DYNAMIC FOR RAIL LENGTH
+            const double DistanceThreshold = 60; //MAKE THIS DYNAMIC FOR RAIL LENGTH
 
             for (int I = 0; I < NumMatchResult.D; I++)
             {
