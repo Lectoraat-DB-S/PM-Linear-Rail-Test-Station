@@ -1,0 +1,84 @@
+<mxfile host="Electron" modified="2024-05-23T12:15:13.448Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="CuaLBSOUrDPNVwS_Gve3" version="24.4.6" type="device">
+  <diagram name="Page-1" id="XWt7EI8PrPKg95o7gHPE">
+    <mxGraphModel dx="850" dy="819" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dxeFSob7ACS17ZFabYRL-14" value="Dashboard" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="150" height="632" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-15" value="CobotArm" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="220" y="20" width="150" height="632" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-16" value="Loadcell" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="420" y="20" width="150" height="632" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-17" value="VisionSoftware" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=65;" vertex="1" parent="1">
+          <mxGeometry x="620" y="20" width="150" height="632" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-18" value="loop" style="shape=umlFrame;dashed=1;pointerEvents=0;dropTarget=0;strokeColor=#B3B3B3;height=20;width=40" vertex="1" parent="1">
+          <mxGeometry x="285" y="355" width="420" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-19" value="[Scan linear rail]" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="dxeFSob7ACS17ZFabYRL-18">
+          <mxGeometry x="40" width="380" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-20" value="Start moving" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-14" target="dxeFSob7ACS17ZFabYRL-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="205" y="127" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-21" value="Measure weight" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-15" target="dxeFSob7ACS17ZFabYRL-16">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="405" y="179" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-22" value="Send weight value" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-16" target="dxeFSob7ACS17ZFabYRL-14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="305" y="231" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-23" value="Take picture" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-15" target="dxeFSob7ACS17ZFabYRL-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="283" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-24" value="Move to next position" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-17" target="dxeFSob7ACS17ZFabYRL-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="335" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-25" value="Take picture" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-15" target="dxeFSob7ACS17ZFabYRL-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="433" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-26" value="Move to next position" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-17" target="dxeFSob7ACS17ZFabYRL-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="505" y="485" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dxeFSob7ACS17ZFabYRL-27" value="Send rail measurements" style="verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="dxeFSob7ACS17ZFabYRL-17" target="dxeFSob7ACS17ZFabYRL-14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="405" y="547" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

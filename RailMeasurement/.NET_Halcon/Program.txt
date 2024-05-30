@@ -1,0 +1,60 @@
+﻿using System.Diagnostics;
+using HalconDotNet;
+
+namespace _NET_Halcon
+{
+    class Program
+    {
+        private static HTuple? CameraParam;
+        private static HTuple? camParFile =
+            Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\camera_parameters.cal";
+        private static HTuple? Pose;
+        private static HTuple? ImageFiles;
+        private static HObject Image;
+        
+        static void Main(string[] args)
+        {
+            // HImage img = new HImage("pcb");
+            // HRegion region = img.Threshold(0d, 122d);
+            // int numRegions = region.Connection().CountObj();
+            // Console.WriteLine("Number of Regions: " + numRegions);
+            ShapeModel();
+            // GenerateFile();
+            
+        }
+
+        static void ShapeModel()
+        {
+            // Read the calibration data.
+            // HOperatorSet.ReadCamPar(camParFile, out CameraParam);
+            // // HOperatorSet.ReadCamPar("camera_parameters.cal", out CameraParam);
+            // HOperatorSet.ReadPose("Assets/pose.dat", out Pose);
+            
+            // Read all images and prepare the alignment.
+            HOperatorSet.ListFiles("Assets/Images", "files", out ImageFiles);
+            HOperatorSet.ReadImage(out Image, ImageFiles[0]);
+
+            // Matching 01: Build the ROI from basic regions
+
+            // Matching 01: Reduce the model template
+
+            // Matching 01: Create and train the shape model
+
+            // Matching 01: set the model parameters
+
+            // Matching 01: Get the model contour for transforming it later into the image
+
+            // Matching 01: Support for displaying the model
+            // Matching 01: Get the reference position
+
+            // Matching 01: Display the model contours
+
+
+        }
+
+        static void GenerateFile()
+        {
+            HOperatorSet.WriteCamPar(CameraParam, "campar_test.dat");
+        }
+    }
+}
