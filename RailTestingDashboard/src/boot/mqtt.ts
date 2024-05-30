@@ -22,7 +22,7 @@ export default boot(({ app }) => {
       //   host: '192.168.6.61',
       //   port: 1884,
       //   clientId: `MyID-${Math.random() * 9999}`,
-      //   mainTopic: 'MAIN',
+      //   mainTopic: 'RTS',
       //   username: 'zigbee',
       //   password: 'zigbeemqtt',
       // },
