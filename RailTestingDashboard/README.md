@@ -6,7 +6,7 @@ A dashboard to display measuring results
 ```bash
 yarn
 # or
-npm install
+pnpm install
 ```
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)

@@ -235,7 +235,7 @@ namespace WinFormsHalcon
             HTuple CircleConnectionsMatrixID;
 
             HOperatorSet.CreateMatrix(Rows, Cols, 0, out CircleConnectionsMatrixID);
-            const double DistanceThreshold = 60; //MAKE THIS DYNAMIC FOR RAIL LENGTH
+            const double DistanceThreshold = 30; //MAKE THIS DYNAMIC FOR RAIL LENGTH
 
             for (int I = 0; I < NumMatchResult.D; I++)
             {
@@ -300,7 +300,10 @@ namespace WinFormsHalcon
                         window.DispCross(Row1, Col1, 6.0, 0.0);
                         window.DispCross(Row2, Col2, 6.0, 0.0);
                         //window.DispText("Point " + testCounter, "image", Row1.D, Col1.D, "red", new HTuple(), new HTuple());
+<<<<<<< Updated upstream
                         window.DispText("Point " + testCounter, "image", rnd.Next((int)Row1.D - 50, (int)Row1.D + 50) , rnd.Next((int)Col1.D - 50, (int)Col1.D + 50), "red", new HTuple(), new HTuple());
+=======
+>>>>>>> Stashed changes
 
                         // Calculate the midpoint of the line
                         double MidRow = (Row1.D + Row2.D) / 2;
