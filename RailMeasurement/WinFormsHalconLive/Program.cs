@@ -1,3 +1,4 @@
+using System.Text.Json;
 using HalconDotNet;
 using MQTTnet.Client;
 
@@ -95,7 +96,14 @@ namespace WinFormsHalcon
             HOperatorSet.OpenFramegrabber("USB3Vision", 1, 1, 0, 0, 0, 0, "progressive", -1, "default", -1, "false", "default", "2BA200004153_DahengImaging_MER2200019U3M", 0, -1, out AcqHandle);
             
             HObject Image;
-            HOperatorSet.ReadImage(out Image, "C:/Users/lucas/Projects/PM-Linear-Rail-Test-Station/Halcon/Programs/DetectCirclesLive/image_0027.png");
+<<<<<<< Updated upstream
+            HTuple imagePath = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\image_0027.png";
+            HOperatorSet.ReadImage(out Image, imagePath);
+            
+=======
+            HTuple imageDir = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\image_0027.png";
+            HOperatorSet.ReadImage(out Image, imageDir);
+>>>>>>> Stashed changes
             
             // Matching 01: Build the ROI from basic regions
             HOperatorSet.GenCircle(out HObject ModelRegion, 756.967, 491.705, 41.7504);
@@ -143,23 +151,18 @@ namespace WinFormsHalcon
         
         private static void CombineMeasurements()
         {
-            // Combine the measurements from two images.
-            // For simplicity, assume you have the measurements from hole 1-6 and 6-12.
-            // You can modify this method to handle the actual logic required for your case.
-
             if (measurementResults.Count == 0)
                 return;
 
-            List<string> combinedMeasurements = new List<string>();
-
-            // Example combining logic (simplified)
-            for (int i = 0; i < measurementResults.Count - 1; i++)
+            var combinedMeasurements = new Dictionary<string, string>();
+            for (int i = 0; i < measurementResults.Count; i++)
             {
-                combinedMeasurements.Add(measurementResults[i]);
+                var parts = measurementResults[i].Split(':');
+                combinedMeasurements[$"Hole_{i + 1}"] = parts[1].Trim();
             }
 
             measurementResults.Clear();
-            measurementResults.AddRange(combinedMeasurements);
+            measurementResults.Add(JsonSerializer.Serialize(combinedMeasurements));
         }
         
         public static async Task CaptureAndProcessMultipleImages(HWindow? window, HTuple? ModelID, HTuple? AcqHandle)
@@ -178,7 +181,8 @@ namespace WinFormsHalcon
             CombineMeasurements();
 
             // Send the combined measurement results with MQTT
-            string payload = string.Join(", ", measurementResults);
+            string payload = measurementResults[0];
+            measurementResults.Clear();
             await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
         }
 
@@ -288,12 +292,18 @@ namespace WinFormsHalcon
                         // Draw a line between the connected circles
                         window.SetColor("pink");
                         window.DispLine(Row1, Col1, Row2, Col2);
+                        
+                        Random rnd = new Random();
 
                         // Draw a dot at the start and end of the line
                         window.SetColor("green");
                         window.DispCross(Row1, Col1, 6.0, 0.0);
                         window.DispCross(Row2, Col2, 6.0, 0.0);
-                        window.DispText("Point " + testCounter, "image", Row1.D, Col1.D, "red", new HTuple(), new HTuple());
+                        //window.DispText("Point " + testCounter, "image", Row1.D, Col1.D, "red", new HTuple(), new HTuple());
+<<<<<<< Updated upstream
+                        window.DispText("Point " + testCounter, "image", rnd.Next((int)Row1.D - 50, (int)Row1.D + 50) , rnd.Next((int)Col1.D - 50, (int)Col1.D + 50), "red", new HTuple(), new HTuple());
+=======
+>>>>>>> Stashed changes
 
                         // Calculate the midpoint of the line
                         double MidRow = (Row1.D + Row2.D) / 2;

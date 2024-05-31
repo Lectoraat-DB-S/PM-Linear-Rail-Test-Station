@@ -21,8 +21,8 @@ namespace WinFormsHalcon
             mqttClient = mqttFactory.CreateMqttClient();
 
             mqttClientOptions = new MqttClientOptionsBuilder()
-                .WithWebSocketServer(o => o.WithUri(WSuri))
-                // .WithTcpServer(host, port)
+                // .WithWebSocketServer(o => o.WithUri(WSuri))
+                .WithTcpServer(host, port)
                 .WithCredentials(username, password)
                 .WithClientId(clientId)
                 .Build();
@@ -71,7 +71,7 @@ namespace WinFormsHalcon
                 .Build();
 
             await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
-            Console.WriteLine(@"MQTT application message is published.");
+            Console.WriteLine($@"Sent message on topic {topic}: {applicationMessage.ConvertPayloadToString()}");
         }
 
         private async Task SubscribeAsync(string topic)
