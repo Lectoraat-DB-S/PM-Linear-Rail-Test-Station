@@ -71,7 +71,7 @@ namespace WinFormsHalcon
                 .Build();
 
             await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
-            Console.WriteLine(@"MQTT application message is published.");
+            Console.WriteLine($@"Sent message on topic {topic}: {applicationMessage.ConvertPayloadToString()}");
         }
 
         private async Task SubscribeAsync(string topic)
