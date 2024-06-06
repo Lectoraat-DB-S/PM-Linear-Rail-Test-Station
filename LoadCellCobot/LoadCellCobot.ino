@@ -14,12 +14,11 @@ const char* mqtt_topic_measurement = "RTS/loadcell/measurement";
 const char* mqtt_topic_result = "RTS/loadcell/result";
 
 // New MQTT topics for each relay and optocoupler
-const char* mqtt_topic_relay1 = "RTS/relay/input1";
+const char* mqtt_topic_relay1 = "RTS/cobot/enabled";
 const char* mqtt_topic_relay2 = "RTS/relay/input2";
 const char* mqtt_topic_relay3 = "RTS/relay/input3";
 const char* mqtt_topic_relay4 = "RTS/relay/input4";
-const char* mqtt_topic_optocoupler1 = "RTS/optocoupler/input1";
-const char* mqtt_topic_optocoupler2 = "RTS/optocoupler/input2";
+const char* mqtt_topic_optocoupler2 = "RTS/vision/picture";
 const char* mqtt_topic_optocoupler3 = "RTS/optocoupler/input3";
 
 WiFiClient espClient;
@@ -173,29 +172,29 @@ void loop() {
   client.loop();
 
   // Check the state of the optocoupler pins and publish a message if they change
-  bool currentStateOptocoupler1 = digitalRead(optocouplerPin1);
-  bool currentStateOptocoupler2 = digitalRead(optocouplerPin2);
+  bool currentStateOptocoupler1 = !digitalRead(optocouplerPin1); // Inverted logic
+  bool currentStateOptocoupler2 = !digitalRead(optocouplerPin2); // Inverted logic
   bool currentStateOptocoupler3 = digitalRead(optocouplerPin3);
-  Serial.println("pin 1: " + currentStateOptocoupler1);
-  Serial.println("pin 2: " + currentStateOptocoupler2);
-  Serial.println("pin 3: " + currentStateOptocoupler3);
+
+  Serial.print("Optocoupler 1: ");
+  Serial.println(currentStateOptocoupler1);
+  Serial.print("Optocoupler 2: ");
+  Serial.println(currentStateOptocoupler2);
+  Serial.print("Optocoupler 3: ");
+  Serial.println(currentStateOptocoupler3);
 
   if (currentStateOptocoupler1 != prevStateOptocoupler1) {
     prevStateOptocoupler1 = currentStateOptocoupler1;
     if (currentStateOptocoupler1 == HIGH) {
-      client.publish(mqtt_topic_optocoupler1, "Optocoupler 1 is HIGH");
-    } else {
-      client.publish(mqtt_topic_optocoupler1, "Optocoupler 1 is LOW");
+      client.publish(mqtt_topic_measurement, "measure");
     }
   }
   
   if (currentStateOptocoupler2 != prevStateOptocoupler2) {
     prevStateOptocoupler2 = currentStateOptocoupler2;
     if (currentStateOptocoupler2 == HIGH) {
-      client.publish(mqtt_topic_optocoupler2, "Optocoupler 2 is HIGH");
-    } else {
-      client.publish(mqtt_topic_optocoupler2, "Optocoupler 2 is LOW");
-    }
+      client.publish(mqtt_topic_optocoupler2, "Take a picture!");
+    } 
   }
 
   if (currentStateOptocoupler3 != prevStateOptocoupler3) {
@@ -206,6 +205,6 @@ void loop() {
       client.publish(mqtt_topic_optocoupler3, "Optocoupler 3 is LOW");
     }
   }
-  
-  delay(1000); // Reduce delay for more responsive state change detection
+
+  delay(1000); // Wait 1 second before reading again
 }
