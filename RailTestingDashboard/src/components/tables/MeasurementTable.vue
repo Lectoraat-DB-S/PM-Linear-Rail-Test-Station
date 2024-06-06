@@ -1,5 +1,6 @@
 ﻿<script lang="ts">
 import { defineComponent, PropType } from 'vue';
+import { useMeasurementStore } from 'stores/measurements';
 
 interface Measurement {
   [key: string]: string | number;
@@ -10,24 +11,41 @@ export default defineComponent({
   props: {
     measurements: {
       type: Array as PropType<Measurement[]>,
-      required: true
-    }
+      required: true,
+    },
   },
-  methods: {
-    formatValue(value: string | number | undefined): string {
+  setup() {
+    const measurementStore = useMeasurementStore();
+
+    const removeMeasurement = (index: number) => {
+      measurementStore.removeMeasurement(index);
+    };
+
+    const formatValue = (value: string | number | undefined): string => {
       if (value === undefined || value === null) return '-';
       const num = parseFloat(value as string);
       if (isNaN(num)) return value.toString();
       return num.toFixed(2);
-    }
-  }
+    };
+
+    const getBadgeColor = (value: number) => {
+      return Math.abs(value - measurementStore.holePitch) <= measurementStore.tolerance ? 'green' : 'red';
+    };
+
+    return {
+      formatValue,
+      removeMeasurement,
+      getBadgeColor,
+    };
+  },
 });
 </script>
 
 <template>
   <div class="q-pa-md">
     <q-table
-      flat bordered
+      flat
+      bordered
       title="Meetgegevens"
       :rows="measurements"
       :columns="[
@@ -41,66 +59,26 @@ export default defineComponent({
         { name: 'Steek_8', align: 'left', label: 'Steek 8', field: 'Steek_8', sortable: true },
         { name: 'Steek_9', align: 'left', label: 'Steek 9', field: 'Steek_9', sortable: true },
         { name: 'Steek_10', align: 'left', label: 'Steek 10', field: 'Steek_10', sortable: true },
-        { name: 'Steek_11', align: 'left', label: 'Steek 11', field: 'Steek_11', sortable: true }
+        { name: 'Steek_11', align: 'left', label: 'Steek 11', field: 'Steek_11', sortable: true },
+        { name: 'actions', align: 'center', label: 'Actions', field: 'actions' },
       ]"
       row-key="Steek_1"
     >
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="Steek_1" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_1) }}
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            <q-badge
+              v-if="col.name !== 'actions'"
+              :color="getBadgeColor(props.row[col.name])"
+            >
+              {{ formatValue(props.row[col.name]) }}
             </q-badge>
-          </q-td>
-          <q-td key="Steek_2" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_2) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_3" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_3) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_4" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_4) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_5" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_5) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_6" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_6) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_7" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_7) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_8" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_8) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_9" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_9) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_10" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_10) }}
-            </q-badge>
-          </q-td>
-          <q-td key="Steek_11" :props="props">
-            <q-badge color="green">
-              {{ formatValue(props.row.Steek_11) }}
-            </q-badge>
+            <q-btn
+              v-else
+              color="negative"
+              icon="delete"
+              @click="removeMeasurement(props.rowIndex)"
+            />
           </q-td>
         </q-tr>
       </template>

@@ -1,17 +1,43 @@
 ﻿<script lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue';
+import { useMeasurementStore } from 'src/stores/measurements';
 
 export default {
-  setup () {
+  name: 'ParameterInput',
+  setup() {
+    const measurementStore = useMeasurementStore();
+
+    // Computed properties to bind store values to input fields
+    const AVal = computed({
+      get: () => measurementStore.railLength,
+      set: (value) => measurementStore.setRailLength(value)
+    });
+    const FVal = computed({
+      get: () => measurementStore.endPitch,
+      set: (value) => measurementStore.setEndPitch(value)
+    });
+    const GVal = computed({
+      get: () => measurementStore.holePitch,
+      set: (value) => measurementStore.setHolePitch(value)
+    });
+    const Gaten = computed({
+      get: () => measurementStore.holeCount,
+      set: (value) => measurementStore.setHoleCount(value)
+    });
+    const Gewicht = computed({
+      get: () => measurementStore.railWeight,
+      set: (value) => measurementStore.setRailWeight(value)
+    });
+
     return {
-      AVal: ref(300),
-      FVal: ref(25),
-      GVal: ref(25),
-      Gaten: ref(8),
-      Gewicht: ref(200)
-    }
-  }
-}
+      AVal,
+      FVal,
+      GVal,
+      Gaten,
+      Gewicht,
+    };
+  },
+};
 </script>
 
 <template>
@@ -22,7 +48,7 @@ export default {
           <q-input
             v-model.number="AVal"
             label="A"
-            placeholder="12.5"
+            placeholder="300"
             type="number"
             filled
             style="max-width: 200px"
@@ -35,7 +61,7 @@ export default {
           <q-input
             v-model.number="FVal"
             label="F"
-            placeholder="12.5"
+            placeholder="25"
             type="number"
             filled
             style="max-width: 200px"
@@ -48,7 +74,7 @@ export default {
           <q-input
             v-model.number="GVal"
             label="G"
-            placeholder="12.5"
+            placeholder="25"
             type="number"
             filled
             style="max-width: 200px"
@@ -76,7 +102,7 @@ export default {
           <q-input
             v-model.number="Gewicht"
             label="Gewicht (g)"
-            placeholder="220.25"
+            placeholder="200"
             type="number"
             filled
             style="max-width: 200px"
