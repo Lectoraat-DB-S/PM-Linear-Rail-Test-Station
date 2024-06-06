@@ -4,6 +4,7 @@ import { useMeasurementStore } from 'stores/measurements';
 
 interface Measurement {
   [key: string]: string | number;
+  timestamp: string ;
 }
 
 export default defineComponent({
@@ -44,11 +45,13 @@ export default defineComponent({
 <template>
   <div class="q-pa-md">
     <q-table
+      class="my-sticky-column-table"
       flat
       bordered
       title="Meetgegevens"
       :rows="measurements"
       :columns="[
+        { name: 'timestamp', align: 'left', label: 'Time', field: 'timestamp', sortable: true },
         { name: 'Steek_1', align: 'left', label: 'Steek 1', field: 'Steek_1', sortable: true },
         { name: 'Steek_2', align: 'left', label: 'Steek 2', field: 'Steek_2', sortable: true },
         { name: 'Steek_3', align: 'left', label: 'Steek 3', field: 'Steek_3', sortable: true },
@@ -62,15 +65,15 @@ export default defineComponent({
         { name: 'Steek_11', align: 'left', label: 'Steek 11', field: 'Steek_11', sortable: true },
         { name: 'actions', align: 'center', label: 'Actions', field: 'actions' },
       ]"
-      row-key="Steek_1"
+      row-key="timestamp"
     >
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <q-badge
-              v-if="col.name !== 'actions'"
-              :color="getBadgeColor(props.row[col.name])"
-            >
+            <div v-if="col.name === 'timestamp'">
+              {{ props.row[col.name] }}
+            </div>
+            <q-badge v-else-if="col.name !== 'actions'" :color="getBadgeColor(props.row[col.name])">
               {{ formatValue(props.row[col.name]) }}
             </q-badge>
             <q-btn
@@ -87,4 +90,20 @@ export default defineComponent({
 </template>
 
 <style scoped lang="sass">
+.my-sticky-column-table
+  max-width: 100%
+
+  thead tr:first-child th:first-child
+    background-color: #edab40
+
+  td:first-child
+    background-color: #edab40
+    color: black
+
+  th:first-child,
+  td:first-child
+    position: sticky
+    left: 0
+    z-index: 1
+    color: black
 </style>

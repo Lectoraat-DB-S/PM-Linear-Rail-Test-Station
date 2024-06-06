@@ -24,7 +24,12 @@ export default defineComponent({
       $mqtt.subscribe(MeasurementsTopic, (data: string) => {
         try {
           const measurement = JSON.parse(data);
-          measurementStore.addMeasurements([measurement]);
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const timestamp = `${hours}:${minutes}`; // Get current time in HH:MM format
+          const measurementWithTimestamp = { ...measurement, timestamp };
+          measurementStore.addMeasurements([measurementWithTimestamp]);
         } catch (error) {
           console.error('Failed to parse measurement data:', error);
         }

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 
 interface Measurement {
   [key: string]: string | number;
+  timestamp: string ;
 }
 
 export const useMeasurementStore = defineStore('measurements', {
