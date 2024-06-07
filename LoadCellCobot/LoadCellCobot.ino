@@ -9,17 +9,19 @@ const char* password = "4wLPR3shared!@-";
 const char* mqtt_server = "10.38.4.165";
 const char* mqtt_username = "zigbee";
 const char* mqtt_password = "zigbeemqtt";
-const char* mqtt_topic_calibration = "RTS/loadcell/calibration";
+const char* mqtt_topic_calibration_command = "RTS/loadcell/calibration";
+const char* mqtt_topic_calibration_factor = "RTS/loadcell/calibration/factor";
 const char* mqtt_topic_measurement = "RTS/loadcell/measurement";
 const char* mqtt_topic_result = "RTS/loadcell/result";
 
 // New MQTT topics for each relay and optocoupler
 const char* mqtt_topic_relay1 = "RTS/cobot/enabled";
-const char* mqtt_topic_relay2 = "RTS/relay/input2";
+const char* mqtt_topic_relay2 = "RTS/cobot/move";
 const char* mqtt_topic_relay3 = "RTS/relay/input3";
 const char* mqtt_topic_relay4 = "RTS/relay/input4";
 const char* mqtt_topic_optocoupler2 = "RTS/vision/picture";
 const char* mqtt_topic_optocoupler3 = "RTS/optocoupler/input3";
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -37,13 +39,14 @@ uint8_t optocouplerPin2 = D7;
 uint8_t optocouplerPin3 = D8;
 
 bool calibrated = false;
-bool calibrationInProgress = false;
-int stage = 0;
+int calibrationStage = 0;
 
 // Store the previous state of the optocoupler pins
 bool prevStateOptocoupler1 = LOW;
 bool prevStateOptocoupler2 = LOW;
 bool prevStateOptocoupler3 = LOW;
+
+float calibration_factor = -457500.00; // Initial calibration factor
 
 void setup_wifi() {
   delay(10);
@@ -61,23 +64,73 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+void startCalibration() {
+  if (calibrationStage == 0) {
+    Serial.println("Calibration: Remove all weights from the scale.");
+    client.publish(mqtt_topic_calibration_command, "Stage 1: Remove all weights from the scale. Press the button again to continue.");
+    calibrationStage++;
+  } else if (calibrationStage == 1) {
+    Serial.println("Calibration: Taring the scale.");
+    scale.set_scale();
+    scale.tare(); // Reset the scale to 0
+    client.publish(mqtt_topic_calibration_command, "Stage 2: Scale tared. Place a known weight on the scale. Press the button again to continue.");
+    calibrationStage++;
+  } else if (calibrationStage == 2) {
+    Serial.println("Calibration: Place a known weight on the scale.");
+    client.publish(mqtt_topic_calibration_command, "Stage 3: Place a known weight on the scale. Enter the calibration factor in the designated topic.");
+    calibrationStage++;
+  } else if (calibrationStage == 3) {
+    Serial.println("Calibration: Waiting for calibration factor.");
+    client.publish(mqtt_topic_calibration_command, "Stage 4: Enter the calibration factor in the designated topic.");
+  } else if (calibrationStage == 4) {
+    Serial.println("Calibration: Completed. Taking a measurement.");
+    float weight = scale.get_units(10); // Take a measurement
+    String weightStr = String(weight, 2);
+    client.publish(mqtt_topic_result, weightStr.c_str());
+    String completionMessage = "Calibration completed. Weight measurement: " + weightStr;
+    client.publish(mqtt_topic_calibration_command, completionMessage.c_str());
+    calibrated = true;
+    calibrationStage = 0; // Reset calibration stage
+  }
+}
+
 void callback(char* topic, byte* payload, unsigned int length) {
   payload[length] = '\0'; // Null-terminate the payload
   String message = String((char*)payload);
+  
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  Serial.println(message);
 
-  if (strcmp(topic, mqtt_topic_calibration) == 0) {
+  if (strcmp(topic, mqtt_topic_calibration_command) == 0) {
     if (message == "0") {
       startCalibration();
     }
+  } else if (strcmp(topic, mqtt_topic_calibration_factor) == 0) {
+    if (calibrationStage == 3) {
+      // Set calibration factor received from the topic during Stage 3
+      calibration_factor = atof(message.c_str());
+      Serial.print("Calibration factor set to: ");
+      Serial.println(calibration_factor);
+      scale.set_scale(calibration_factor); // Set the scale to the new calibration factor
+      calibrationStage++; // Move to the next stage
+      startCalibration(); // Proceed to the next step
+    }
   } else if (strcmp(topic, mqtt_topic_measurement) == 0) {
-    if (message == "measure") {
-      if (calibrated) {
-        float weight = scale.get_units(10);
-        String weightStr = String(weight, 2);
-        client.publish(mqtt_topic_result, weightStr.c_str());
-      } else {
-        client.publish(mqtt_topic_calibration, "Error: Scale not calibrated.");
-      }
+    if (calibrated) {
+      // Take 3 measurements and calculate the average
+      float weight1 = scale.get_units(10);
+      delay(100); // Short delay between measurements
+      float weight2 = scale.get_units(10);
+      delay(100);
+      float weight3 = scale.get_units(10);
+      float averageWeight = (weight1 + weight2 + weight3) / 3.0;
+      
+      String weightStr = String(averageWeight, 2);
+      client.publish(mqtt_topic_result, weightStr.c_str());
+    } else {
+      client.publish(mqtt_topic_calibration_command, "Error: Scale not calibrated.");
     }
   } else if (strcmp(topic, mqtt_topic_relay1) == 0) {
     if (message == "true") {
@@ -106,34 +159,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
-void startCalibration() {
-  switch (stage) {
-    case 0:
-      calibrationInProgress = true;
-      client.publish(mqtt_topic_calibration, "Make sure no weight is attached to the gripper");
-      stage++;
-      break;
-    case 1:
-      scale.tare();
-      client.publish(mqtt_topic_calibration, "Place weight on the scale");
-      stage++;
-      break;
-    case 2:
-      scale.set_scale(1005); // Set calibration weight to 1 gram
-      calibrationInProgress = false;
-      calibrated = true;
-      client.publish(mqtt_topic_calibration, "Tare scale and calibration completed");
-      stage = 0;
-      break;
-  }
-}
-
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP8266Client", mqtt_username, mqtt_password)) {
       Serial.println("connected");
-      client.subscribe(mqtt_topic_calibration);
+      client.subscribe(mqtt_topic_calibration_command);
+      client.subscribe(mqtt_topic_calibration_factor);
       client.subscribe(mqtt_topic_measurement);
       client.subscribe(mqtt_topic_relay1); // Subscribe to the relay topics
       client.subscribe(mqtt_topic_relay2);
@@ -165,6 +197,8 @@ void setup() {
   pinMode(optocouplerPin3, INPUT);
 }
 
+
+
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -176,12 +210,6 @@ void loop() {
   bool currentStateOptocoupler2 = !digitalRead(optocouplerPin2); // Inverted logic
   bool currentStateOptocoupler3 = digitalRead(optocouplerPin3);
 
-  Serial.print("Optocoupler 1: ");
-  Serial.println(currentStateOptocoupler1);
-  Serial.print("Optocoupler 2: ");
-  Serial.println(currentStateOptocoupler2);
-  Serial.print("Optocoupler 3: ");
-  Serial.println(currentStateOptocoupler3);
 
   if (currentStateOptocoupler1 != prevStateOptocoupler1) {
     prevStateOptocoupler1 = currentStateOptocoupler1;
@@ -206,5 +234,5 @@ void loop() {
     }
   }
 
-  delay(1000); // Wait 1 second before reading again
+  delay(50); // Wait 1 second before reading again
 }
