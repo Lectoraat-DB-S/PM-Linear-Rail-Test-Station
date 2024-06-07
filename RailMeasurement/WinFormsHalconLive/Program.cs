@@ -16,6 +16,9 @@ namespace WinFormsHalcon
         private static HTuple? CameraParam;
         private static HTuple? Pose;
         private static MQTT? _mqttClient;
+
+        private static bool firstPicture = true;
+        
         
         private static readonly List<string> measurementResults = new();
         
@@ -31,7 +34,6 @@ namespace WinFormsHalcon
         {
             Application.ApplicationExit += OnApplicationExit;
             
-            // Start a new form to visualize results
             ApplicationConfiguration.Initialize();
 
             Form1 form1 = new();
@@ -96,14 +98,9 @@ namespace WinFormsHalcon
             HOperatorSet.OpenFramegrabber("USB3Vision", 1, 1, 0, 0, 0, 0, "progressive", -1, "default", -1, "false", "default", "2BA200004153_DahengImaging_MER2200019U3M", 0, -1, out AcqHandle);
             
             HObject Image;
-<<<<<<< Updated upstream
+
             HTuple imagePath = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\image_0027.png";
             HOperatorSet.ReadImage(out Image, imagePath);
-            
-=======
-            HTuple imageDir = Path.GetDirectoryName(Environment.ProcessPath) + @"\Assets\image_0027.png";
-            HOperatorSet.ReadImage(out Image, imageDir);
->>>>>>> Stashed changes
             
             // Matching 01: Build the ROI from basic regions
             HOperatorSet.GenCircle(out HObject ModelRegion, 756.967, 491.705, 41.7504);
@@ -158,7 +155,7 @@ namespace WinFormsHalcon
             for (int i = 0; i < measurementResults.Count; i++)
             {
                 var parts = measurementResults[i].Split(':');
-                combinedMeasurements[$"Hole_{i + 1}"] = parts[1].Trim();
+                combinedMeasurements[$"Steek_{i + 1}"] = parts[1].Trim();
             }
 
             measurementResults.Clear();
@@ -167,30 +164,49 @@ namespace WinFormsHalcon
         
         public static async Task CaptureAndProcessMultipleImages(HWindow? window, HTuple? ModelID, HTuple? AcqHandle)
         {
-            // Capture the first image and process it
-            await GrabAndProcessImage(window, ModelID, AcqHandle, false);
+            if (firstPicture)
+            {
+                // Capture the first image and process it
+                await GrabAndProcessImage(window, ModelID, AcqHandle, false);
 
-            // Move the cobot to the next position
-            await MoveCobotAsync(150); // Adjust the move distance based on your setup
-            await Task.Delay(2000); // Wait for the cobot to reach the position
+                // Move the cobot to the next position
+                await _mqttClient.PublishAsync("RTS/cobot/move", "true");
+                await Task.Delay(500);
+                await _mqttClient.PublishAsync("RTS/cobot/move", "false");
+                // await MoveCobotAsync(150);
+                
+                await _mqttClient.PublishAsync("RTS/vision/debug", "First!");
+                firstPicture = false;
+            }
+            else if (!firstPicture)
+            {
+                // Capture the second image and process it
+                await GrabAndProcessImage(window, ModelID, AcqHandle, true);
+                
+                // Move the cobot to the next position
+                await _mqttClient.PublishAsync("RTS/cobot/move", "true");
+                await Task.Delay(500);
+                await _mqttClient.PublishAsync("RTS/cobot/move", "false");
 
-            // Capture the second image and process it
-            await GrabAndProcessImage(window, ModelID, AcqHandle, true);
+                // Combine the measurements from both images
+                CombineMeasurements();
 
-            // Combine the measurements from both images
-            CombineMeasurements();
+                // Send the combined measurement results with MQTT
+                string payload = measurementResults[0];
+                measurementResults.Clear();
+                await _mqttClient.PublishAsync("RTS/vision/debug", "Seccond!");
+                await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
+                
 
-            // Send the combined measurement results with MQTT
-            string payload = measurementResults[0];
-            measurementResults.Clear();
-            await _mqttClient.PublishAsync("RTS/vision/measurements", payload);
+
+                firstPicture = true;
+            }
         }
 
         private static async Task MoveCobotAsync(double distance)
         {
             string moveCommand = $"MOVE {distance}";
             await _mqttClient.PublishAsync("RTS/cobot/move", moveCommand);
-            await Task.Delay(2000);
         }
 
         public static async Task GrabAndProcessImage(HWindow? window, HTuple? ModelID, HTuple? AcqHandle, bool isSecondImage)
@@ -300,10 +316,8 @@ namespace WinFormsHalcon
                         window.DispCross(Row1, Col1, 6.0, 0.0);
                         window.DispCross(Row2, Col2, 6.0, 0.0);
                         //window.DispText("Point " + testCounter, "image", Row1.D, Col1.D, "red", new HTuple(), new HTuple());
-<<<<<<< Updated upstream
+                        
                         window.DispText("Point " + testCounter, "image", rnd.Next((int)Row1.D - 50, (int)Row1.D + 50) , rnd.Next((int)Col1.D - 50, (int)Col1.D + 50), "red", new HTuple(), new HTuple());
-=======
->>>>>>> Stashed changes
 
                         // Calculate the midpoint of the line
                         double MidRow = (Row1.D + Row2.D) / 2;
