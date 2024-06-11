@@ -22,7 +22,6 @@ const char* mqtt_topic_relay4 = "RTS/relay/input4";
 const char* mqtt_topic_optocoupler2 = "RTS/vision/picture";
 const char* mqtt_topic_optocoupler3 = "RTS/optocoupler/input3";
 
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -84,12 +83,12 @@ void startCalibration() {
     client.publish(mqtt_topic_calibration_command, "Stage 4: Enter the calibration factor in the designated topic.");
   } else if (calibrationStage == 4) {
     Serial.println("Calibration: Completed. Taking a measurement.");
-    float weight = scale.get_units(10); // Take a measurement
+    float weight = abs(scale.get_units(10)); // Take a measurement and make it positive
     String weightStr = String(weight, 2);
     client.publish(mqtt_topic_result, weightStr.c_str());
     String completionMessage = "Calibration completed. Weight measurement: " + weightStr;
     client.publish(mqtt_topic_calibration_command, completionMessage.c_str());
-    calibrated = true;
+    calibrated = true; // Ensure calibrated is set to true here as well
     calibrationStage = 0; // Reset calibration stage
   }
 }
@@ -108,23 +107,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
       startCalibration();
     }
   } else if (strcmp(topic, mqtt_topic_calibration_factor) == 0) {
-    if (calibrationStage == 3) {
-      // Set calibration factor received from the topic during Stage 3
-      calibration_factor = atof(message.c_str());
-      Serial.print("Calibration factor set to: ");
-      Serial.println(calibration_factor);
-      scale.set_scale(calibration_factor); // Set the scale to the new calibration factor
-      calibrationStage++; // Move to the next stage
-      startCalibration(); // Proceed to the next step
-    }
+    // Set calibration factor received from the topic
+    calibration_factor = atof(message.c_str());
+    Serial.print("Calibration factor set to: ");
+    Serial.println(calibration_factor);
+    scale.set_scale(calibration_factor); // Set the scale to the new calibration factor
+    calibrated = true; // Set calibrated to true after receiving the calibration factor
+
+    // Take a measurement after setting the calibration factor
+    float weight = abs(scale.get_units(10)); // Take a measurement and make it positive
+    String weightStr = String(weight, 2);
+    client.publish(mqtt_topic_result, weightStr.c_str());
   } else if (strcmp(topic, mqtt_topic_measurement) == 0) {
     if (calibrated) {
       // Take 3 measurements and calculate the average
-      float weight1 = scale.get_units(10);
+      float weight1 = abs(scale.get_units(10)); // Make it positive
       delay(100); // Short delay between measurements
-      float weight2 = scale.get_units(10);
+      float weight2 = abs(scale.get_units(10)); // Make it positive
       delay(100);
-      float weight3 = scale.get_units(10);
+      float weight3 = abs(scale.get_units(10)); // Make it positive
       float averageWeight = (weight1 + weight2 + weight3) / 3.0;
       
       String weightStr = String(averageWeight, 2);
@@ -196,8 +197,6 @@ void setup() {
   pinMode(optocouplerPin2, INPUT);
   pinMode(optocouplerPin3, INPUT);
 }
-
-
 
 void loop() {
   if (!client.connected()) {
