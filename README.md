@@ -10,7 +10,6 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
 - **Operating System**: Ubuntu 23.04
 - **Python**: Versie 3.8
   - `paho-mqtt==1.5.1`
-  - `opencv-python==4.5.2`
 - **Node.js**: Versie 14.17.0
 - **Quasar CLI**: Versie 1.1.2
 - **Halcon**: Versie 19.11 (voor het vision programma)
