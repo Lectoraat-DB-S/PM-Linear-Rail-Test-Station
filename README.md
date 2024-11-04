@@ -27,8 +27,9 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
   - `Ethernet`: Versie 2.0.2
 
 ### Hardware
-- Arduino Uno
+- Arduino Uno (niet meer nodig, vervangen door ESP8266)
 - MQTT Broker (bijv. Mosquitto)
+- ESP8266
 
 ## Architectuur
 
@@ -46,17 +47,8 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
 
 ### Arduino
 - **Hardware**: Arduino.
-- **Software Installatie**:
-  - Installeer de Arduino IDE.
-  - Installeer de benodigde libraries
-  - Open en upload de sketches uit de map `/Arduino` naar de Arduino.
-
-### PlatformIO
-- **Hardware**: Dezelfde of compatibele microcontroller als Arduino.
-- **Software Installatie**:
-  - Installeer PlatformIO in Visual Studio Code.
-  - Installeer de benodigde libraries
-  - Open de map `/PlatformIO` en upload de code naar de microcontroller.
+- **Inhoud map**:
+  - Oude test code voor arduino
 
 ### Python Mock MQTT
 - **Software Installatie**:
@@ -76,6 +68,31 @@ Dit project faciliteert de meting van afstanden tussen gaten op lineaire rails v
   - Zorg ervoor dat Halcon en Python geïnstalleerd zijn.
   - Navigeer naar de map `/RailMeasurement/HalconRailMeasurement`.
   - Voer `pip install -r requirements.txt` uit voor de benodigde Python libraries.
+
+### Loadcell en MQTT cobot kant
+
+- **Software Installatie**:
+  - Installeer de Arduino IDE en zorg dat ondersteuning voor de ESP8266 geconfigureerd is.
+  - Navigeer naar de map `/LoadCellCobot`.
+  - Open het bestand `LoadCellCobot.ino` in de Arduino IDE.
+  - Voeg de volgende libraries toe via de Library Manager:
+    - `ESP8266WiFi`
+    - `PubSubClient`
+    - `HX711`
+  - Upload de code naar de ESP8266 om de loadcell-functionaliteit te activeren.
+
+- **Functionaliteiten**:
+  - Ondersteunt kalibratie van de loadcell via MQTT om nauwkeurige gewichtsmetingen uit te voeren.
+  - Voert gewichtsmetingen uit en publiceert de resultaten op MQTT.
+  - Maakt het mogelijk om vier relais te bedienen via MQTT voor input op cobot.
+  - Bewaakt drie optocoupler-ingangen (outputs van cobot) en publiceert statusveranderingen op MQTT.
+
+- **Gebruik**:
+  - Configureer de WiFi- en MQTT-instellingen in de code.
+  - Start de kalibratie via het MQTT-topic `RTS/loadcell/calibration` en stel de kalibratiefactor in via `RTS/loadcell/calibration/factor`.
+  - Voer gewichtsmetingen uit door een bericht naar `RTS/loadcell/measurement` te sturen.
+  - Schakel de relais in en uit via MQTT-topics en ontvang statusupdates van de optocoupler-ingangen.
+
 
 ## Usage
 
